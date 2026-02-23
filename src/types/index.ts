@@ -3,6 +3,9 @@ export interface StockItem {
   name: string;
   sku: string;
   category: string;
+  description: string;
+  supplier: string;
+  imageUrl: string;
   quantity: number;
   minQuantity: number;
   unit: string;

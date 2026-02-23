@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { Plus, Search, QrCode, Trash2, Edit2 } from 'lucide-react';
+import { Plus, Search, QrCode, Trash2, Edit2, Camera, Printer } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import QRCodeDisplay from '@/components/QRCodeDisplay';
+import QRScanner from '@/components/QRScanner';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { initialProducts, initialAssemblyLists } from '@/data/initialData';
 import type { Product, AssemblyList } from '@/types';
@@ -15,6 +16,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import { useSearchParams } from 'react-router-dom';
 
 const emptyProduct: Omit<Product, 'id' | 'createdAt'> = {
   name: '', sku: '', description: '', assemblyListId: '', quantityProduced: 0,
@@ -28,6 +30,9 @@ const ProductsPage = () => {
   const [formOpen, setFormOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyProduct);
+  const [scannerOpen, setScannerOpen] = useState(false);
+  const [searchParams] = useSearchParams();
+  const highlightId = searchParams.get('highlight');
 
   const filtered = products.filter(
     (p) =>
@@ -68,33 +73,38 @@ const ProductsPage = () => {
             <h1 className="text-2xl font-bold tracking-tight">Produits</h1>
             <p className="text-muted-foreground text-sm mt-1">{products.length} produits</p>
           </div>
-          <Dialog open={formOpen} onOpenChange={(open) => { setFormOpen(open); if (!open) { setEditingId(null); setForm(emptyProduct); } }}>
-            <DialogTrigger asChild>
-              <Button><Plus className="w-4 h-4 mr-2" />Nouveau produit</Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-md">
-              <DialogHeader>
-                <DialogTitle>{editingId ? 'Modifier' : 'Nouveau produit'}</DialogTitle>
-              </DialogHeader>
-              <div className="grid gap-3 mt-2">
-                <Input placeholder="Nom *" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
-                <Input placeholder="SKU *" value={form.sku} onChange={(e) => setForm({ ...form, sku: e.target.value })} className="font-mono" />
-                <Input placeholder="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
-                <Select value={form.assemblyListId} onValueChange={(v) => setForm({ ...form, assemblyListId: v })}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Liste d'assemblage" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {assemblyLists.map((a) => (
-                      <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Input type="number" placeholder="Quantité produite" value={form.quantityProduced || ''} onChange={(e) => setForm({ ...form, quantityProduced: Number(e.target.value) })} />
-                <Button onClick={handleSave} className="w-full mt-2">{editingId ? 'Enregistrer' : 'Créer'}</Button>
-              </div>
-            </DialogContent>
-          </Dialog>
+          <div className="flex gap-2">
+            <Button variant="outline" size="icon" onClick={() => setScannerOpen(true)} title="Scanner QR">
+              <Camera className="w-4 h-4" />
+            </Button>
+            <Dialog open={formOpen} onOpenChange={(open) => { setFormOpen(open); if (!open) { setEditingId(null); setForm(emptyProduct); } }}>
+              <DialogTrigger asChild>
+                <Button><Plus className="w-4 h-4 mr-2" />Nouveau produit</Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-md">
+                <DialogHeader>
+                  <DialogTitle>{editingId ? 'Modifier' : 'Nouveau produit'}</DialogTitle>
+                </DialogHeader>
+                <div className="grid gap-3 mt-2">
+                  <Input placeholder="Nom *" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+                  <Input placeholder="SKU *" value={form.sku} onChange={(e) => setForm({ ...form, sku: e.target.value })} className="font-mono" />
+                  <Input placeholder="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+                  <Select value={form.assemblyListId} onValueChange={(v) => setForm({ ...form, assemblyListId: v })}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Liste d'assemblage" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {assemblyLists.map((a) => (
+                        <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Input type="number" placeholder="Quantité produite" value={form.quantityProduced || ''} onChange={(e) => setForm({ ...form, quantityProduced: Number(e.target.value) })} />
+                  <Button onClick={handleSave} className="w-full mt-2">{editingId ? 'Enregistrer' : 'Créer'}</Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+          </div>
         </div>
 
         <div className="relative mb-4">
@@ -104,7 +114,7 @@ const ProductsPage = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filtered.map((product) => (
-            <div key={product.id} className="glass-card rounded-xl p-5">
+            <div key={product.id} className={`glass-card rounded-xl p-5 ${highlightId === product.id ? 'ring-2 ring-primary/50' : ''}`}>
               <div className="flex justify-between items-start mb-3">
                 <div>
                   <h3 className="font-semibold">{product.name}</h3>
@@ -147,6 +157,8 @@ const ProductsPage = () => {
             )}
           </DialogContent>
         </Dialog>
+
+        <QRScanner open={scannerOpen} onOpenChange={setScannerOpen} />
       </div>
     </AppLayout>
   );

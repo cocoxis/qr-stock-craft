@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, Trash2, Edit2, ChevronDown, ChevronUp } from 'lucide-react';
+import { Plus, Trash2, Edit2, ChevronDown, ChevronUp, Printer } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { initialAssemblyLists, initialStockItems } from '@/data/initialData';
@@ -27,6 +27,39 @@ const AssemblyPage = () => {
   const [assemblyItems, setAssemblyItems] = useState<AssemblyItem[]>([]);
 
   const getStockItem = (id: string) => stockItems.find((s) => s.id === id);
+
+  const handlePrintList = (list: AssemblyList) => {
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return;
+    printWindow.document.write(`
+      <html><head><title>${list.name} - StockQR</title>
+      <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        h1 { font-size: 18px; } h2 { font-size: 14px; color: #666; margin-bottom: 16px; }
+        table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        th, td { border: 1px solid #ddd; padding: 6px 8px; text-align: left; }
+        th { background: #f5f5f5; font-weight: 600; }
+        .right { text-align: right; }
+        .mono { font-family: monospace; }
+        @media print { body { padding: 0; } }
+      </style></head><body>
+      <h1>${list.name}</h1>
+      <h2>Produit: ${list.productName} — ${new Date().toLocaleDateString('fr-FR')}</h2>
+      ${list.description ? `<p>${list.description}</p>` : ''}
+      <table>
+        <thead><tr><th>Composant</th><th>SKU</th><th class="right">Qté requise</th><th class="right">En stock</th><th>Statut</th></tr></thead>
+        <tbody>
+          ${list.items.map(item => {
+            const stock = getStockItem(item.stockItemId);
+            const ok = stock ? stock.quantity >= item.quantity : false;
+            return `<tr><td>${stock?.name ?? 'Inconnu'}</td><td class="mono">${stock?.sku ?? '—'}</td><td class="right mono">${item.quantity} ${stock?.unit ?? ''}</td><td class="right mono">${stock?.quantity ?? 0} ${stock?.unit ?? ''}</td><td>${ok ? '✓ OK' : '✗ Insuffisant'}</td></tr>`;
+          }).join('')}
+        </tbody>
+      </table></body></html>
+    `);
+    printWindow.document.close();
+    printWindow.print();
+  };
 
   const resetForm = () => {
     setName('');
@@ -148,6 +181,9 @@ const AssemblyPage = () => {
                   <p className="text-xs text-muted-foreground">Produit: {list.productName} • {list.items.length} composants</p>
                 </div>
                 <div className="flex items-center gap-2">
+                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => { e.stopPropagation(); handlePrintList(list); }} title="Imprimer">
+                    <Printer className="w-3.5 h-3.5" />
+                  </Button>
                   <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => { e.stopPropagation(); handleEdit(list); }}>
                     <Edit2 className="w-3.5 h-3.5" />
                   </Button>

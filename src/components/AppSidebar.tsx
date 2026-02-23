@@ -1,5 +1,6 @@
 import { NavLink, useLocation } from 'react-router-dom';
 import { Package, Box, ClipboardList, LayoutDashboard, QrCode } from 'lucide-react';
+import ThemeToggle from '@/components/ThemeToggle';
 
 const navItems = [
   { to: '/', icon: LayoutDashboard, label: 'Tableau de bord' },
@@ -45,8 +46,9 @@ const AppSidebar = () => {
         })}
       </nav>
 
-      <div className="p-4 border-t border-sidebar-border">
+      <div className="p-4 border-t border-sidebar-border flex items-center justify-between">
         <p className="text-xs text-sidebar-foreground/40 font-mono">v1.0.0</p>
+        <ThemeToggle />
       </div>
     </aside>
   );
