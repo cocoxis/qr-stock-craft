@@ -1,5 +1,5 @@
-import { useState, useRef } from 'react';
-import { Plus, Search, QrCode, Trash2, Edit2, Camera, Printer, ImageIcon } from 'lucide-react';
+import { useState, useRef, useMemo } from 'react';
+import { Plus, Search, QrCode, Trash2, Edit2, Camera, Printer, ImageIcon, Eye, X, Filter } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import QRCodeDisplay from '@/components/QRCodeDisplay';
 import QRScanner from '@/components/QRScanner';
@@ -9,13 +9,26 @@ import type { StockItem } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogFooter,
+  DialogDescription,
 } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { useSearchParams } from 'react-router-dom';
 
 const emptyItem: Omit<StockItem, 'id' | 'createdAt'> = {
@@ -25,22 +38,32 @@ const emptyItem: Omit<StockItem, 'id' | 'createdAt'> = {
 const StockPage = () => {
   const [items, setItems] = useLocalStorage<StockItem[]>('stockItems', initialStockItems);
   const [search, setSearch] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [qrItem, setQrItem] = useState<StockItem | null>(null);
   const [formOpen, setFormOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyItem);
   const [scannerOpen, setScannerOpen] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState<StockItem | null>(null);
+  const [viewItem, setViewItem] = useState<StockItem | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [searchParams] = useSearchParams();
   const highlightId = searchParams.get('highlight');
 
-  const filtered = items.filter(
-    (i) =>
+  const categories = useMemo(() => {
+    const cats = new Set(items.map(i => i.category).filter(Boolean));
+    return Array.from(cats).sort();
+  }, [items]);
+
+  const filtered = items.filter((i) => {
+    const matchesSearch =
       i.name.toLowerCase().includes(search.toLowerCase()) ||
       i.sku.toLowerCase().includes(search.toLowerCase()) ||
       i.category.toLowerCase().includes(search.toLowerCase()) ||
-      (i.supplier && i.supplier.toLowerCase().includes(search.toLowerCase()))
-  );
+      (i.supplier && i.supplier.toLowerCase().includes(search.toLowerCase()));
+    const matchesCategory = categoryFilter === 'all' || i.category === categoryFilter;
+    return matchesSearch && matchesCategory;
+  });
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -80,8 +103,11 @@ const StockPage = () => {
     setFormOpen(true);
   };
 
-  const handleDelete = (id: string) => {
-    setItems(items.filter((i) => i.id !== id));
+  const handleDeleteConfirmed = () => {
+    if (deleteConfirm) {
+      setItems(items.filter((i) => i.id !== deleteConfirm.id));
+      setDeleteConfirm(null);
+    }
   };
 
   const handlePrint = () => {
@@ -125,7 +151,7 @@ const StockPage = () => {
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-2xl font-bold tracking-tight">Stock</h1>
-            <p className="text-muted-foreground text-sm mt-1">{items.length} articles</p>
+            <p className="text-muted-foreground text-sm mt-1">{filtered.length}/{items.length} articles</p>
           </div>
           <div className="flex gap-2">
             <Button variant="outline" size="icon" onClick={() => setScannerOpen(true)} title="Scanner QR">
@@ -158,7 +184,6 @@ const StockPage = () => {
                   </div>
                   <Input type="number" step="0.01" placeholder="Prix unitaire (€)" value={form.price || ''} onChange={(e) => setForm({ ...form, price: Number(e.target.value) })} />
                   
-                  {/* Image */}
                   <div>
                     <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
                     <Button type="button" variant="outline" className="w-full" onClick={() => fileInputRef.current?.click()}>
@@ -182,14 +207,29 @@ const StockPage = () => {
           </div>
         </div>
 
-        <div className="relative mb-4">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input
-            placeholder="Rechercher par nom, SKU, catégorie, fournisseur..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-10"
-          />
+        {/* Search + Category filter */}
+        <div className="flex gap-3 mb-4">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder="Rechercher par nom, SKU, fournisseur..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+          <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+            <SelectTrigger className="w-[180px]">
+              <Filter className="w-3.5 h-3.5 mr-2 text-muted-foreground" />
+              <SelectValue placeholder="Catégorie" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Toutes catégories</SelectItem>
+              {categories.map(cat => (
+                <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         <div className="glass-card rounded-xl overflow-hidden">
@@ -209,7 +249,11 @@ const StockPage = () => {
               </thead>
               <tbody>
                 {filtered.map((item) => (
-                  <tr key={item.id} className={`border-b border-border/30 hover:bg-muted/50 transition-colors ${highlightId === item.id ? 'bg-primary/10 ring-1 ring-primary/30' : ''}`}>
+                  <tr
+                    key={item.id}
+                    className={`border-b border-border/30 hover:bg-muted/50 transition-colors cursor-pointer ${highlightId === item.id ? 'bg-primary/10 ring-1 ring-primary/30' : ''}`}
+                    onClick={() => setViewItem(item)}
+                  >
                     <td className="p-3">
                       <div className="flex items-center gap-2">
                         {item.imageUrl && (
@@ -232,25 +276,34 @@ const StockPage = () => {
                     <td className="p-3 font-mono text-xs">{item.location}</td>
                     <td className="p-3 text-right font-mono">{item.price.toFixed(2)}€</td>
                     <td className="p-3 text-right">
-                      <div className="flex items-center justify-end gap-1">
+                      <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
+                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setViewItem(item)}>
+                          <Eye className="w-3.5 h-3.5" />
+                        </Button>
                         <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setQrItem(item)}>
                           <QrCode className="w-3.5 h-3.5" />
                         </Button>
                         <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleEdit(item)}>
                           <Edit2 className="w-3.5 h-3.5" />
                         </Button>
-                        <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => handleDelete(item.id)}>
+                        <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => setDeleteConfirm(item)}>
                           <Trash2 className="w-3.5 h-3.5" />
                         </Button>
                       </div>
                     </td>
                   </tr>
                 ))}
+                {filtered.length === 0 && (
+                  <tr>
+                    <td colSpan={8} className="p-8 text-center text-muted-foreground">Aucun article trouvé</td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
         </div>
 
+        {/* QR Code dialog */}
         <Dialog open={!!qrItem} onOpenChange={() => setQrItem(null)}>
           <DialogContent className="max-w-xs text-center">
             <DialogHeader>
@@ -268,6 +321,99 @@ const StockPage = () => {
             )}
           </DialogContent>
         </Dialog>
+
+        {/* Detail view dialog */}
+        <Dialog open={!!viewItem} onOpenChange={() => setViewItem(null)}>
+          <DialogContent className="max-w-lg">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                {viewItem?.name}
+              </DialogTitle>
+              <DialogDescription className="font-mono text-xs">{viewItem?.sku}</DialogDescription>
+            </DialogHeader>
+            {viewItem && (
+              <div className="space-y-4">
+                {viewItem.imageUrl && (
+                  <img src={viewItem.imageUrl} alt={viewItem.name} className="w-full h-48 object-cover rounded-lg border border-border" />
+                )}
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="glass-card rounded-lg p-3">
+                    <p className="text-xs text-muted-foreground mb-1">Catégorie</p>
+                    <p className="text-sm font-medium">{viewItem.category || '—'}</p>
+                  </div>
+                  <div className="glass-card rounded-lg p-3">
+                    <p className="text-xs text-muted-foreground mb-1">Fournisseur</p>
+                    <p className="text-sm font-medium">{viewItem.supplier || '—'}</p>
+                  </div>
+                  <div className="glass-card rounded-lg p-3">
+                    <p className="text-xs text-muted-foreground mb-1">Quantité</p>
+                    <p className={`text-sm font-mono font-semibold ${viewItem.quantity <= viewItem.minQuantity ? 'text-warning' : ''}`}>
+                      {viewItem.quantity} {viewItem.unit}
+                      <span className="text-xs text-muted-foreground font-normal ml-1">(min: {viewItem.minQuantity})</span>
+                    </p>
+                  </div>
+                  <div className="glass-card rounded-lg p-3">
+                    <p className="text-xs text-muted-foreground mb-1">Prix unitaire</p>
+                    <p className="text-sm font-mono font-semibold">{viewItem.price.toFixed(2)} €</p>
+                  </div>
+                  <div className="glass-card rounded-lg p-3">
+                    <p className="text-xs text-muted-foreground mb-1">Emplacement</p>
+                    <p className="text-sm font-mono font-medium">{viewItem.location || '—'}</p>
+                  </div>
+                  <div className="glass-card rounded-lg p-3">
+                    <p className="text-xs text-muted-foreground mb-1">Valeur totale</p>
+                    <p className="text-sm font-mono font-semibold text-primary">
+                      {(viewItem.quantity * viewItem.price).toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}
+                    </p>
+                  </div>
+                </div>
+
+                {viewItem.description && (
+                  <div className="glass-card rounded-lg p-3">
+                    <p className="text-xs text-muted-foreground mb-1">Description</p>
+                    <p className="text-sm">{viewItem.description}</p>
+                  </div>
+                )}
+
+                <div className="flex items-center justify-center">
+                  <QRCodeDisplay
+                    value={JSON.stringify({ type: 'stock', id: viewItem.id, sku: viewItem.sku, name: viewItem.name })}
+                    size={120}
+                    label={viewItem.sku}
+                  />
+                </div>
+
+                <DialogFooter className="gap-2 sm:gap-0">
+                  <Button variant="outline" onClick={() => { setViewItem(null); handleEdit(viewItem); }}>
+                    <Edit2 className="w-3.5 h-3.5 mr-2" /> Modifier
+                  </Button>
+                  <Button variant="destructive" onClick={() => { setViewItem(null); setDeleteConfirm(viewItem); }}>
+                    <Trash2 className="w-3.5 h-3.5 mr-2" /> Supprimer
+                  </Button>
+                </DialogFooter>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+
+        {/* Delete confirmation */}
+        <AlertDialog open={!!deleteConfirm} onOpenChange={() => setDeleteConfirm(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
+              <AlertDialogDescription>
+                Êtes-vous sûr de vouloir supprimer <span className="font-semibold">{deleteConfirm?.name}</span> ({deleteConfirm?.sku}) ? Cette action est irréversible.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Annuler</AlertDialogCancel>
+              <AlertDialogAction onClick={handleDeleteConfirmed} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                Supprimer
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
 
         <QRScanner open={scannerOpen} onOpenChange={setScannerOpen} />
       </div>
