@@ -335,6 +335,8 @@ const StockPage = () => {
                   value={JSON.stringify({ type: 'stock', id: qrItem.id, sku: qrItem.sku, name: qrItem.name })}
                   size={180}
                   label={qrItem.sku}
+                  showPrint
+                  itemName={qrItem.name}
                 />
                 <p className="text-xs text-muted-foreground">Empl: {qrItem.location} • {qrItem.quantity} {qrItem.unit}</p>
               </div>
@@ -415,6 +417,8 @@ const StockPage = () => {
                     value={JSON.stringify({ type: 'stock', id: viewItem.id, sku: viewItem.sku, name: viewItem.name })}
                     size={120}
                     label={viewItem.sku}
+                    showPrint
+                    itemName={viewItem.name}
                   />
                 </div>
 
