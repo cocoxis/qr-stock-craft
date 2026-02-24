@@ -1,5 +1,5 @@
 import { useState, useRef, useMemo } from 'react';
-import { Plus, Search, QrCode, Trash2, Edit2, Camera, Printer, ImageIcon, Eye, X, Filter } from 'lucide-react';
+import { Plus, Search, QrCode, Trash2, Edit2, Camera, Printer, ImageIcon, Eye, X, Filter, Calendar, Clock } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import QRCodeDisplay from '@/components/QRCodeDisplay';
 import QRScanner from '@/components/QRScanner';
@@ -32,7 +32,7 @@ import {
 import { useSearchParams } from 'react-router-dom';
 
 const emptyItem: Omit<StockItem, 'id' | 'createdAt'> = {
-  name: '', sku: '', category: '', description: '', supplier: '', imageUrl: '', quantity: 0, minQuantity: 0, unit: 'pcs', location: '', price: 0,
+  name: '', sku: '', category: '', description: '', supplier: '', supplierRef: '', imageUrl: '', quantity: 0, minQuantity: 0, unit: 'pcs', location: '', price: 0, updatedAt: '',
 };
 
 const StockPage = () => {
@@ -77,13 +77,15 @@ const StockPage = () => {
 
   const handleSave = () => {
     if (!form.name || !form.sku) return;
+    const now = new Date().toISOString().split('T')[0];
     if (editingId) {
-      setItems(items.map((i) => (i.id === editingId ? { ...i, ...form } : i)));
+      setItems(items.map((i) => (i.id === editingId ? { ...i, ...form, updatedAt: now } : i)));
     } else {
       const newItem: StockItem = {
         ...form,
         id: `stk-${Date.now()}`,
-        createdAt: new Date().toISOString().split('T')[0],
+        createdAt: now,
+        updatedAt: now,
       };
       setItems([...items, newItem]);
     }
@@ -95,9 +97,9 @@ const StockPage = () => {
   const handleEdit = (item: StockItem) => {
     setForm({
       name: item.name, sku: item.sku, category: item.category, description: item.description || '',
-      supplier: item.supplier || '', imageUrl: item.imageUrl || '',
+      supplier: item.supplier || '', supplierRef: item.supplierRef || '', imageUrl: item.imageUrl || '',
       quantity: item.quantity, minQuantity: item.minQuantity, unit: item.unit,
-      location: item.location, price: item.price,
+      location: item.location, price: item.price, updatedAt: item.updatedAt || '',
     });
     setEditingId(item.id);
     setFormOpen(true);
@@ -172,9 +174,27 @@ const StockPage = () => {
                   <Input placeholder="Nom *" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
                   <Input placeholder="SKU *" value={form.sku} onChange={(e) => setForm({ ...form, sku: e.target.value })} className="font-mono" />
                   <Textarea placeholder="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={2} />
-                  <Input placeholder="Fournisseur" value={form.supplier} onChange={(e) => setForm({ ...form, supplier: e.target.value })} />
                   <div className="grid grid-cols-2 gap-3">
-                    <Input placeholder="Catégorie" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} />
+                    <Input placeholder="Fournisseur" value={form.supplier} onChange={(e) => setForm({ ...form, supplier: e.target.value })} />
+                    <Input placeholder="Réf. fournisseur" value={form.supplierRef} onChange={(e) => setForm({ ...form, supplierRef: e.target.value })} className="font-mono" />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Select value={form.category} onValueChange={(val) => setForm({ ...form, category: val === '__custom__' ? '' : val })}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Catégorie" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {categories.map(cat => (
+                            <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                          ))}
+                          <SelectItem value="__custom__">+ Nouvelle catégorie</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      {(!form.category || !categories.includes(form.category)) && (
+                        <Input placeholder="Nouvelle catégorie" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} className="mt-2" />
+                      )}
+                    </div>
                     <Input placeholder="Emplacement" value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} className="font-mono" />
                   </div>
                   <div className="grid grid-cols-3 gap-3">
@@ -345,6 +365,9 @@ const StockPage = () => {
                   <div className="glass-card rounded-lg p-3">
                     <p className="text-xs text-muted-foreground mb-1">Fournisseur</p>
                     <p className="text-sm font-medium">{viewItem.supplier || '—'}</p>
+                    {viewItem.supplierRef && (
+                      <p className="text-xs font-mono text-muted-foreground mt-0.5">Réf: {viewItem.supplierRef}</p>
+                    )}
                   </div>
                   <div className="glass-card rounded-lg p-3">
                     <p className="text-xs text-muted-foreground mb-1">Quantité</p>
@@ -375,6 +398,17 @@ const StockPage = () => {
                     <p className="text-sm">{viewItem.description}</p>
                   </div>
                 )}
+
+                <div className="flex gap-3 text-xs text-muted-foreground">
+                  <span className="flex items-center gap-1">
+                    <Calendar className="w-3 h-3" /> Créé le {new Date(viewItem.createdAt).toLocaleDateString('fr-FR')}
+                  </span>
+                  {viewItem.updatedAt && viewItem.updatedAt !== viewItem.createdAt && (
+                    <span className="flex items-center gap-1">
+                      <Clock className="w-3 h-3" /> Modifié le {new Date(viewItem.updatedAt).toLocaleDateString('fr-FR')}
+                    </span>
+                  )}
+                </div>
 
                 <div className="flex items-center justify-center">
                   <QRCodeDisplay
