@@ -152,6 +152,8 @@ const ProductsPage = () => {
                   value={JSON.stringify({ type: 'product', id: qrProduct.id, sku: qrProduct.sku, name: qrProduct.name })}
                   size={180}
                   label={qrProduct.sku}
+                  showPrint
+                  itemName={qrProduct.name}
                 />
               </div>
             )}
