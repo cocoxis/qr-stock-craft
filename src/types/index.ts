@@ -5,6 +5,7 @@ export interface StockItem {
   category: string;
   description: string;
   supplier: string;
+  supplierRef: string;
   imageUrl: string;
   quantity: number;
   minQuantity: number;
@@ -12,6 +13,7 @@ export interface StockItem {
   location: string;
   price: number;
   createdAt: string;
+  updatedAt: string;
 }
 
 export interface Product {

@@ -8,6 +8,7 @@ export const initialStockItems: StockItem[] = [
     category: 'Visserie',
     description: 'Vis à tête hexagonale M6x20 en acier inoxydable A2',
     supplier: 'Boulonnerie Express',
+    supplierRef: 'BE-VIS-M620',
     imageUrl: '',
     quantity: 2500,
     minQuantity: 500,
@@ -15,6 +16,7 @@ export const initialStockItems: StockItem[] = [
     location: 'A1-03',
     price: 0.05,
     createdAt: '2024-01-15',
+    updatedAt: '2024-01-15',
   },
   {
     id: 'stk-002',
@@ -23,6 +25,7 @@ export const initialStockItems: StockItem[] = [
     category: 'Matières premières',
     description: 'Plaque aluminium 1000x2000mm épaisseur 2mm',
     supplier: 'Alu Service',
+    supplierRef: 'AS-2024-PL2',
     imageUrl: '',
     quantity: 45,
     minQuantity: 10,
@@ -30,6 +33,7 @@ export const initialStockItems: StockItem[] = [
     location: 'B2-01',
     price: 12.5,
     createdAt: '2024-01-20',
+    updatedAt: '2024-01-20',
   },
   {
     id: 'stk-003',
@@ -38,6 +42,7 @@ export const initialStockItems: StockItem[] = [
     category: 'Composants',
     description: 'Roulement à billes 6205-2RS étanche',
     supplier: 'SKF Distribution',
+    supplierRef: 'SKF-6205-2RS',
     imageUrl: '',
     quantity: 120,
     minQuantity: 30,
@@ -45,6 +50,7 @@ export const initialStockItems: StockItem[] = [
     location: 'C1-05',
     price: 4.8,
     createdAt: '2024-02-01',
+    updatedAt: '2024-02-01',
   },
   {
     id: 'stk-004',
@@ -53,6 +59,7 @@ export const initialStockItems: StockItem[] = [
     category: 'Composants',
     description: 'Moteur à courant continu 24V 500W',
     supplier: 'Maxon Motor',
+    supplierRef: 'MAX-DC24-500',
     imageUrl: '',
     quantity: 8,
     minQuantity: 5,
@@ -60,6 +67,7 @@ export const initialStockItems: StockItem[] = [
     location: 'D3-02',
     price: 45.0,
     createdAt: '2024-02-10',
+    updatedAt: '2024-02-10',
   },
   {
     id: 'stk-005',
@@ -68,6 +76,7 @@ export const initialStockItems: StockItem[] = [
     category: 'Électrique',
     description: 'Câble souple H07V-K 2.5mm² noir',
     supplier: 'Nexans',
+    supplierRef: 'NX-H07VK-25N',
     imageUrl: '',
     quantity: 350,
     minQuantity: 100,
@@ -75,6 +84,7 @@ export const initialStockItems: StockItem[] = [
     location: 'E1-01',
     price: 1.2,
     createdAt: '2024-02-15',
+    updatedAt: '2024-02-15',
   },
 ];
 
