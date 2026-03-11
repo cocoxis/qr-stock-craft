@@ -99,8 +99,8 @@ const StockPage = () => {
   const handleEdit = (item: StockItem) => {
     setForm({
       name: item.name, sku: item.sku, category: item.category, description: item.description || '',
-      supplier: item.supplier || '', supplierRef: item.supplierRef || '', imageUrl: item.imageUrl || '',
-      quantity: item.quantity, minQuantity: item.minQuantity, unit: item.unit,
+      supplier: item.supplier || '', supplierRef: item.supplierRef || '', supplierLink: item.supplierLink || '',
+      imageUrl: item.imageUrl || '', quantity: item.quantity, minQuantity: item.minQuantity, unit: item.unit,
       location: item.location, price: item.price, updatedAt: item.updatedAt || '',
     });
     setEditingId(item.id);
