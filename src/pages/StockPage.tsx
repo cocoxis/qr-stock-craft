@@ -168,7 +168,7 @@ const StockPage = () => {
               <DialogTrigger asChild>
                 <Button><Plus className="w-4 h-4 mr-2" />Ajouter</Button>
               </DialogTrigger>
-              <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto">
+              <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>{editingId ? 'Modifier' : 'Nouvel article'}</DialogTitle>
                 </DialogHeader>
