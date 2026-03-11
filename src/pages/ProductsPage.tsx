@@ -24,8 +24,9 @@ const emptyProduct: Omit<Product, 'id' | 'createdAt'> = {
 };
 
 const ProductsPage = () => {
-  const [products, setProducts] = useLocalStorage<Product[]>('products', initialProducts);
-  const [assemblyLists] = useLocalStorage<AssemblyList[]>('assemblyLists', initialAssemblyLists);
+  const { getStorageKey } = useWorkspaceContext();
+  const [products, setProducts] = useWorkspaceStorage<Product[]>(getStorageKey('products'), initialProducts);
+  const [assemblyLists] = useWorkspaceStorage<AssemblyList[]>(getStorageKey('assemblyLists'), initialAssemblyLists);
   const [search, setSearch] = useState('');
   const [qrProduct, setQrProduct] = useState<Product | null>(null);
   const [formOpen, setFormOpen] = useState(false);
