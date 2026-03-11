@@ -3,7 +3,8 @@ import { Plus, Search, QrCode, Trash2, Edit2, Camera, Printer } from 'lucide-rea
 import AppLayout from '@/components/AppLayout';
 import QRCodeDisplay from '@/components/QRCodeDisplay';
 import QRScanner from '@/components/QRScanner';
-import { useLocalStorage } from '@/hooks/useLocalStorage';
+import { useWorkspaceContext } from '@/contexts/WorkspaceContext';
+import { useWorkspaceStorage } from '@/hooks/useWorkspaceStorage';
 import { initialProducts, initialAssemblyLists } from '@/data/initialData';
 import type { Product, AssemblyList } from '@/types';
 import { Button } from '@/components/ui/button';
