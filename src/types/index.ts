@@ -23,6 +23,7 @@ export interface Product {
   description: string;
   assemblyListId: string;
   quantityProduced: number;
+  minQuantity: number;
   createdAt: string;
 }
 
