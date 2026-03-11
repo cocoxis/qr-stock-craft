@@ -3,7 +3,8 @@ import { Plus, Search, QrCode, Trash2, Edit2, Camera, Printer, ImageIcon, Eye, X
 import AppLayout from '@/components/AppLayout';
 import QRCodeDisplay from '@/components/QRCodeDisplay';
 import QRScanner from '@/components/QRScanner';
-import { useLocalStorage } from '@/hooks/useLocalStorage';
+import { useWorkspaceContext } from '@/contexts/WorkspaceContext';
+import { useWorkspaceStorage } from '@/hooks/useWorkspaceStorage';
 import { initialStockItems } from '@/data/initialData';
 import type { StockItem } from '@/types';
 import { Button } from '@/components/ui/button';
@@ -36,7 +37,8 @@ const emptyItem: Omit<StockItem, 'id' | 'createdAt'> = {
 };
 
 const StockPage = () => {
-  const [items, setItems] = useLocalStorage<StockItem[]>('stockItems', initialStockItems);
+  const { getStorageKey } = useWorkspaceContext();
+  const [items, setItems] = useWorkspaceStorage<StockItem[]>(getStorageKey('stockItems'), initialStockItems);
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [qrItem, setQrItem] = useState<StockItem | null>(null);
@@ -346,7 +348,7 @@ const StockPage = () => {
 
         {/* Detail view dialog */}
         <Dialog open={!!viewItem} onOpenChange={() => setViewItem(null)}>
-          <DialogContent className="max-w-lg">
+          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 {viewItem?.name}
@@ -354,12 +356,12 @@ const StockPage = () => {
               <DialogDescription className="font-mono text-xs">{viewItem?.sku}</DialogDescription>
             </DialogHeader>
             {viewItem && (
-              <div className="space-y-4">
+              <div className="space-y-5">
                 {viewItem.imageUrl && (
-                  <img src={viewItem.imageUrl} alt={viewItem.name} className="w-full h-48 object-cover rounded-lg border border-border" />
+                  <img src={viewItem.imageUrl} alt={viewItem.name} className="w-full h-64 object-cover rounded-lg border border-border" />
                 )}
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                   <div className="glass-card rounded-lg p-3">
                     <p className="text-xs text-muted-foreground mb-1">Catégorie</p>
                     <p className="text-sm font-medium">{viewItem.category || '—'}</p>

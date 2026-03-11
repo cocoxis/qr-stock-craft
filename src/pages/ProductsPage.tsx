@@ -3,7 +3,8 @@ import { Plus, Search, QrCode, Trash2, Edit2, Camera, Printer } from 'lucide-rea
 import AppLayout from '@/components/AppLayout';
 import QRCodeDisplay from '@/components/QRCodeDisplay';
 import QRScanner from '@/components/QRScanner';
-import { useLocalStorage } from '@/hooks/useLocalStorage';
+import { useWorkspaceContext } from '@/contexts/WorkspaceContext';
+import { useWorkspaceStorage } from '@/hooks/useWorkspaceStorage';
 import { initialProducts, initialAssemblyLists } from '@/data/initialData';
 import type { Product, AssemblyList } from '@/types';
 import { Button } from '@/components/ui/button';
@@ -19,12 +20,13 @@ import {
 import { useSearchParams } from 'react-router-dom';
 
 const emptyProduct: Omit<Product, 'id' | 'createdAt'> = {
-  name: '', sku: '', description: '', assemblyListId: '', quantityProduced: 0,
+  name: '', sku: '', description: '', assemblyListId: '', quantityProduced: 0, minQuantity: 0,
 };
 
 const ProductsPage = () => {
-  const [products, setProducts] = useLocalStorage<Product[]>('products', initialProducts);
-  const [assemblyLists] = useLocalStorage<AssemblyList[]>('assemblyLists', initialAssemblyLists);
+  const { getStorageKey } = useWorkspaceContext();
+  const [products, setProducts] = useWorkspaceStorage<Product[]>(getStorageKey('products'), initialProducts);
+  const [assemblyLists] = useWorkspaceStorage<AssemblyList[]>(getStorageKey('assemblyLists'), initialAssemblyLists);
   const [search, setSearch] = useState('');
   const [qrProduct, setQrProduct] = useState<Product | null>(null);
   const [formOpen, setFormOpen] = useState(false);
@@ -58,7 +60,7 @@ const ProductsPage = () => {
   };
 
   const handleEdit = (product: Product) => {
-    setForm({ name: product.name, sku: product.sku, description: product.description, assemblyListId: product.assemblyListId, quantityProduced: product.quantityProduced });
+    setForm({ name: product.name, sku: product.sku, description: product.description, assemblyListId: product.assemblyListId, quantityProduced: product.quantityProduced, minQuantity: product.minQuantity || 0 });
     setEditingId(product.id);
     setFormOpen(true);
   };
@@ -100,6 +102,7 @@ const ProductsPage = () => {
                     </SelectContent>
                   </Select>
                   <Input type="number" placeholder="Quantité produite" value={form.quantityProduced || ''} onChange={(e) => setForm({ ...form, quantityProduced: Number(e.target.value) })} />
+                  <Input type="number" placeholder="Seuil stock bas" value={form.minQuantity || ''} onChange={(e) => setForm({ ...form, minQuantity: Number(e.target.value) })} />
                   <Button onClick={handleSave} className="w-full mt-2">{editingId ? 'Enregistrer' : 'Créer'}</Button>
                 </div>
               </DialogContent>
@@ -135,7 +138,12 @@ const ProductsPage = () => {
               {product.description && <p className="text-sm text-muted-foreground mb-3">{product.description}</p>}
               <div className="flex justify-between text-xs">
                 <span className="text-muted-foreground">Assemblage: {getAssemblyName(product.assemblyListId)}</span>
-                <span className="font-mono font-semibold">{product.quantityProduced} unités</span>
+                <span className={`font-mono font-semibold ${product.minQuantity > 0 && product.quantityProduced <= product.minQuantity ? 'text-warning' : ''}`}>
+                  {product.quantityProduced} unités
+                  {product.minQuantity > 0 && (
+                    <span className="text-muted-foreground font-normal ml-1">(min: {product.minQuantity})</span>
+                  )}
+                </span>
               </div>
             </div>
           ))}

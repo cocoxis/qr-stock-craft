@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Plus, Trash2, Edit2, ChevronDown, ChevronUp, Printer } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
-import { useLocalStorage } from '@/hooks/useLocalStorage';
+import { useWorkspaceContext } from '@/contexts/WorkspaceContext';
+import { useWorkspaceStorage } from '@/hooks/useWorkspaceStorage';
 import { initialAssemblyLists, initialStockItems } from '@/data/initialData';
 import type { AssemblyList, AssemblyItem, StockItem } from '@/types';
 import { Button } from '@/components/ui/button';
@@ -16,8 +17,9 @@ import {
 } from '@/components/ui/dialog';
 
 const AssemblyPage = () => {
-  const [lists, setLists] = useLocalStorage<AssemblyList[]>('assemblyLists', initialAssemblyLists);
-  const [stockItems] = useLocalStorage<StockItem[]>('stockItems', initialStockItems);
+  const { getStorageKey } = useWorkspaceContext();
+  const [lists, setLists] = useWorkspaceStorage<AssemblyList[]>(getStorageKey('assemblyLists'), initialAssemblyLists);
+  const [stockItems] = useWorkspaceStorage<StockItem[]>(getStorageKey('stockItems'), initialStockItems);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [formOpen, setFormOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
