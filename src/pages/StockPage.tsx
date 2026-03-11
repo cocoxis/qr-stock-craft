@@ -33,7 +33,7 @@ import {
 import { useSearchParams } from 'react-router-dom';
 
 const emptyItem: Omit<StockItem, 'id' | 'createdAt'> = {
-  name: '', sku: '', category: '', description: '', supplier: '', supplierRef: '', imageUrl: '', quantity: 0, minQuantity: 0, unit: 'pcs', location: '', price: 0, updatedAt: '',
+  name: '', sku: '', category: '', description: '', supplier: '', supplierRef: '', supplierLink: '', imageUrl: '', quantity: 0, minQuantity: 0, unit: 'pcs', location: '', price: 0, updatedAt: '',
 };
 
 const StockPage = () => {
@@ -99,8 +99,8 @@ const StockPage = () => {
   const handleEdit = (item: StockItem) => {
     setForm({
       name: item.name, sku: item.sku, category: item.category, description: item.description || '',
-      supplier: item.supplier || '', supplierRef: item.supplierRef || '', imageUrl: item.imageUrl || '',
-      quantity: item.quantity, minQuantity: item.minQuantity, unit: item.unit,
+      supplier: item.supplier || '', supplierRef: item.supplierRef || '', supplierLink: item.supplierLink || '',
+      imageUrl: item.imageUrl || '', quantity: item.quantity, minQuantity: item.minQuantity, unit: item.unit,
       location: item.location, price: item.price, updatedAt: item.updatedAt || '',
     });
     setEditingId(item.id);
@@ -168,7 +168,7 @@ const StockPage = () => {
               <DialogTrigger asChild>
                 <Button><Plus className="w-4 h-4 mr-2" />Ajouter</Button>
               </DialogTrigger>
-              <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto">
+              <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>{editingId ? 'Modifier' : 'Nouvel article'}</DialogTitle>
                 </DialogHeader>
@@ -179,7 +179,8 @@ const StockPage = () => {
                   <div className="grid grid-cols-2 gap-3">
                     <Input placeholder="Fournisseur" value={form.supplier} onChange={(e) => setForm({ ...form, supplier: e.target.value })} />
                     <Input placeholder="Réf. fournisseur" value={form.supplierRef} onChange={(e) => setForm({ ...form, supplierRef: e.target.value })} className="font-mono" />
-                  </div>
+                   </div>
+                   <Input placeholder="Lien fournisseur (URL)" value={form.supplierLink} onChange={(e) => setForm({ ...form, supplierLink: e.target.value })} type="url" />
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <Select value={form.category} onValueChange={(val) => setForm({ ...form, category: val === '__custom__' ? '' : val })}>
@@ -371,6 +372,11 @@ const StockPage = () => {
                     <p className="text-sm font-medium">{viewItem.supplier || '—'}</p>
                     {viewItem.supplierRef && (
                       <p className="text-xs font-mono text-muted-foreground mt-0.5">Réf: {viewItem.supplierRef}</p>
+                    )}
+                    {viewItem.supplierLink && (
+                      <a href={viewItem.supplierLink} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline mt-0.5 block truncate">
+                        {viewItem.supplierLink}
+                      </a>
                     )}
                   </div>
                   <div className="glass-card rounded-lg p-3">
