@@ -179,7 +179,8 @@ const StockPage = () => {
                   <div className="grid grid-cols-2 gap-3">
                     <Input placeholder="Fournisseur" value={form.supplier} onChange={(e) => setForm({ ...form, supplier: e.target.value })} />
                     <Input placeholder="Réf. fournisseur" value={form.supplierRef} onChange={(e) => setForm({ ...form, supplierRef: e.target.value })} className="font-mono" />
-                  </div>
+                   </div>
+                   <Input placeholder="Lien fournisseur (URL)" value={form.supplierLink} onChange={(e) => setForm({ ...form, supplierLink: e.target.value })} type="url" />
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <Select value={form.category} onValueChange={(val) => setForm({ ...form, category: val === '__custom__' ? '' : val })}>

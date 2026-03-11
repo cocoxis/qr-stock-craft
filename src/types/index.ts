@@ -6,6 +6,7 @@ export interface StockItem {
   description: string;
   supplier: string;
   supplierRef: string;
+  supplierLink: string;
   imageUrl: string;
   quantity: number;
   minQuantity: number;
