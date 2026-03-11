@@ -45,6 +45,7 @@ export const initialStockItems: StockItem[] = [
     description: 'Roulement à billes 6205-2RS étanche',
     supplier: 'SKF Distribution',
     supplierRef: 'SKF-6205-2RS',
+    supplierLink: '',
     imageUrl: '',
     quantity: 120,
     minQuantity: 30,
