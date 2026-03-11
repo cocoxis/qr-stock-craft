@@ -373,6 +373,11 @@ const StockPage = () => {
                     {viewItem.supplierRef && (
                       <p className="text-xs font-mono text-muted-foreground mt-0.5">Réf: {viewItem.supplierRef}</p>
                     )}
+                    {viewItem.supplierLink && (
+                      <a href={viewItem.supplierLink} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline mt-0.5 block truncate">
+                        {viewItem.supplierLink}
+                      </a>
+                    )}
                   </div>
                   <div className="glass-card rounded-lg p-3">
                     <p className="text-xs text-muted-foreground mb-1">Quantité</p>

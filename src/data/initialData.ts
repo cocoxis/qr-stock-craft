@@ -81,6 +81,7 @@ export const initialStockItems: StockItem[] = [
     description: 'Câble souple H07V-K 2.5mm² noir',
     supplier: 'Nexans',
     supplierRef: 'NX-H07VK-25N',
+    supplierLink: '',
     imageUrl: '',
     quantity: 350,
     minQuantity: 100,
