@@ -63,6 +63,7 @@ export const initialStockItems: StockItem[] = [
     description: 'Moteur à courant continu 24V 500W',
     supplier: 'Maxon Motor',
     supplierRef: 'MAX-DC24-500',
+    supplierLink: '',
     imageUrl: '',
     quantity: 8,
     minQuantity: 5,
