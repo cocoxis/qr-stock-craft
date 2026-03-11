@@ -33,7 +33,7 @@ import {
 import { useSearchParams } from 'react-router-dom';
 
 const emptyItem: Omit<StockItem, 'id' | 'createdAt'> = {
-  name: '', sku: '', category: '', description: '', supplier: '', supplierRef: '', imageUrl: '', quantity: 0, minQuantity: 0, unit: 'pcs', location: '', price: 0, updatedAt: '',
+  name: '', sku: '', category: '', description: '', supplier: '', supplierRef: '', supplierLink: '', imageUrl: '', quantity: 0, minQuantity: 0, unit: 'pcs', location: '', price: 0, updatedAt: '',
 };
 
 const StockPage = () => {
