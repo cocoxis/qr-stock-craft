@@ -346,7 +346,7 @@ const StockPage = () => {
 
         {/* Detail view dialog */}
         <Dialog open={!!viewItem} onOpenChange={() => setViewItem(null)}>
-          <DialogContent className="max-w-lg">
+          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 {viewItem?.name}

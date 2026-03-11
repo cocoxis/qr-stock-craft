@@ -100,6 +100,7 @@ const ProductsPage = () => {
                     </SelectContent>
                   </Select>
                   <Input type="number" placeholder="Quantité produite" value={form.quantityProduced || ''} onChange={(e) => setForm({ ...form, quantityProduced: Number(e.target.value) })} />
+                  <Input type="number" placeholder="Seuil stock bas" value={form.minQuantity || ''} onChange={(e) => setForm({ ...form, minQuantity: Number(e.target.value) })} />
                   <Button onClick={handleSave} className="w-full mt-2">{editingId ? 'Enregistrer' : 'Créer'}</Button>
                 </div>
               </DialogContent>
