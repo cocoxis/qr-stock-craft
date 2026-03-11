@@ -19,7 +19,7 @@ import {
 import { useSearchParams } from 'react-router-dom';
 
 const emptyProduct: Omit<Product, 'id' | 'createdAt'> = {
-  name: '', sku: '', description: '', assemblyListId: '', quantityProduced: 0,
+  name: '', sku: '', description: '', assemblyListId: '', quantityProduced: 0, minQuantity: 0,
 };
 
 const ProductsPage = () => {
