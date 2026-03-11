@@ -356,9 +356,9 @@ const StockPage = () => {
               <DialogDescription className="font-mono text-xs">{viewItem?.sku}</DialogDescription>
             </DialogHeader>
             {viewItem && (
-              <div className="space-y-4">
+              <div className="space-y-5">
                 {viewItem.imageUrl && (
-                  <img src={viewItem.imageUrl} alt={viewItem.name} className="w-full h-48 object-cover rounded-lg border border-border" />
+                  <img src={viewItem.imageUrl} alt={viewItem.name} className="w-full h-64 object-cover rounded-lg border border-border" />
                 )}
 
                 <div className="grid grid-cols-2 gap-3">
