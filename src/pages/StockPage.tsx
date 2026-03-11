@@ -361,7 +361,7 @@ const StockPage = () => {
                   <img src={viewItem.imageUrl} alt={viewItem.name} className="w-full h-64 object-cover rounded-lg border border-border" />
                 )}
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                   <div className="glass-card rounded-lg p-3">
                     <p className="text-xs text-muted-foreground mb-1">Catégorie</p>
                     <p className="text-sm font-medium">{viewItem.category || '—'}</p>
