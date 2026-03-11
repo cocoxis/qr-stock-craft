@@ -37,7 +37,8 @@ const emptyItem: Omit<StockItem, 'id' | 'createdAt'> = {
 };
 
 const StockPage = () => {
-  const [items, setItems] = useLocalStorage<StockItem[]>('stockItems', initialStockItems);
+  const { getStorageKey } = useWorkspaceContext();
+  const [items, setItems] = useWorkspaceStorage<StockItem[]>(getStorageKey('stockItems'), initialStockItems);
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [qrItem, setQrItem] = useState<StockItem | null>(null);
