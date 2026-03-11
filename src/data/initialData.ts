@@ -112,6 +112,7 @@ export const initialProducts: Product[] = [
     description: 'Module de commande principal assemblé',
     assemblyListId: 'asm-001',
     quantityProduced: 15,
+    minQuantity: 5,
     createdAt: '2024-03-15',
   },
 ];

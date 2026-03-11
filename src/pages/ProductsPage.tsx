@@ -58,7 +58,7 @@ const ProductsPage = () => {
   };
 
   const handleEdit = (product: Product) => {
-    setForm({ name: product.name, sku: product.sku, description: product.description, assemblyListId: product.assemblyListId, quantityProduced: product.quantityProduced });
+    setForm({ name: product.name, sku: product.sku, description: product.description, assemblyListId: product.assemblyListId, quantityProduced: product.quantityProduced, minQuantity: product.minQuantity || 0 });
     setEditingId(product.id);
     setFormOpen(true);
   };
