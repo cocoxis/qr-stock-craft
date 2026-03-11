@@ -9,6 +9,7 @@ export const initialStockItems: StockItem[] = [
     description: 'Vis à tête hexagonale M6x20 en acier inoxydable A2',
     supplier: 'Boulonnerie Express',
     supplierRef: 'BE-VIS-M620',
+    supplierLink: '',
     imageUrl: '',
     quantity: 2500,
     minQuantity: 500,
