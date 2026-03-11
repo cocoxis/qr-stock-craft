@@ -27,6 +27,7 @@ export const initialStockItems: StockItem[] = [
     description: 'Plaque aluminium 1000x2000mm épaisseur 2mm',
     supplier: 'Alu Service',
     supplierRef: 'AS-2024-PL2',
+    supplierLink: '',
     imageUrl: '',
     quantity: 45,
     minQuantity: 10,
