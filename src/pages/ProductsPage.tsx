@@ -138,7 +138,12 @@ const ProductsPage = () => {
               {product.description && <p className="text-sm text-muted-foreground mb-3">{product.description}</p>}
               <div className="flex justify-between text-xs">
                 <span className="text-muted-foreground">Assemblage: {getAssemblyName(product.assemblyListId)}</span>
-                <span className="font-mono font-semibold">{product.quantityProduced} unités</span>
+                <span className={`font-mono font-semibold ${product.minQuantity > 0 && product.quantityProduced <= product.minQuantity ? 'text-warning' : ''}`}>
+                  {product.quantityProduced} unités
+                  {product.minQuantity > 0 && (
+                    <span className="text-muted-foreground font-normal ml-1">(min: {product.minQuantity})</span>
+                  )}
+                </span>
               </div>
             </div>
           ))}
