@@ -1,13 +1,15 @@
 import { Package, Box, AlertTriangle, ClipboardList } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
-import { useLocalStorage } from '@/hooks/useLocalStorage';
+import { useWorkspaceContext } from '@/contexts/WorkspaceContext';
+import { useWorkspaceStorage } from '@/hooks/useWorkspaceStorage';
 import { initialStockItems, initialProducts, initialAssemblyLists } from '@/data/initialData';
 import type { StockItem, Product, AssemblyList } from '@/types';
 
 const Index = () => {
-  const [stockItems] = useLocalStorage<StockItem[]>('stockItems', initialStockItems);
-  const [products] = useLocalStorage<Product[]>('products', initialProducts);
-  const [assemblyLists] = useLocalStorage<AssemblyList[]>('assemblyLists', initialAssemblyLists);
+  const { getStorageKey } = useWorkspaceContext();
+  const [stockItems] = useWorkspaceStorage<StockItem[]>(getStorageKey('stockItems'), initialStockItems);
+  const [products] = useWorkspaceStorage<Product[]>(getStorageKey('products'), initialProducts);
+  const [assemblyLists] = useWorkspaceStorage<AssemblyList[]>(getStorageKey('assemblyLists'), initialAssemblyLists);
 
   const lowStockItems = stockItems.filter(item => item.quantity <= item.minQuantity);
   const totalStockValue = stockItems.reduce((sum, item) => sum + item.quantity * item.price, 0);
