@@ -210,6 +210,28 @@ const StockPage = () => {
                     <Input placeholder="Unité" value={form.unit} onChange={(e) => setForm({ ...form, unit: e.target.value })} />
                   </div>
                   <Input type="number" step="0.01" placeholder="Prix unitaire (€)" value={form.price || ''} onChange={(e) => setForm({ ...form, price: Number(e.target.value) })} />
+
+                  {form.category?.toLowerCase() === 'composants' && (
+                    <div className="border border-border rounded-lg p-3 space-y-3">
+                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Champs Composants</p>
+                      <div className="grid grid-cols-3 gap-3">
+                        <Input placeholder="Valeur (ex: 10kΩ)" value={form.componentValue || ''} onChange={(e) => setForm({ ...form, componentValue: e.target.value })} />
+                        <Input placeholder="Tension (ex: 25V)" value={form.componentVoltage || ''} onChange={(e) => setForm({ ...form, componentVoltage: e.target.value })} />
+                        <Input placeholder="FootPrint (ex: 0805)" value={form.componentFootprint || ''} onChange={(e) => setForm({ ...form, componentFootprint: e.target.value })} />
+                      </div>
+                    </div>
+                  )}
+
+                  {form.category?.toLowerCase() === 'visserie' && (
+                    <div className="border border-border rounded-lg p-3 space-y-3">
+                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Champs Visserie</p>
+                      <div className="grid grid-cols-3 gap-3">
+                        <Input placeholder="Type (ex: CHC, HEX)" value={form.screwType || ''} onChange={(e) => setForm({ ...form, screwType: e.target.value })} />
+                        <Input placeholder="Longueur (ex: 20mm)" value={form.screwLength || ''} onChange={(e) => setForm({ ...form, screwLength: e.target.value })} />
+                        <Input placeholder="Forme (ex: Cylindrique)" value={form.screwShape || ''} onChange={(e) => setForm({ ...form, screwShape: e.target.value })} />
+                      </div>
+                    </div>
+                  )}
                   
                   <div>
                     <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
