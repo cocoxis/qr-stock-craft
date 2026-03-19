@@ -60,11 +60,18 @@ const StockPage = () => {
   }, [items]);
 
   const filtered = items.filter((i) => {
+    const s = search.toLowerCase();
     const matchesSearch =
-      i.name.toLowerCase().includes(search.toLowerCase()) ||
-      i.sku.toLowerCase().includes(search.toLowerCase()) ||
-      i.category.toLowerCase().includes(search.toLowerCase()) ||
-      (i.supplier && i.supplier.toLowerCase().includes(search.toLowerCase()));
+      i.name.toLowerCase().includes(s) ||
+      i.sku.toLowerCase().includes(s) ||
+      i.category.toLowerCase().includes(s) ||
+      (i.supplier && i.supplier.toLowerCase().includes(s)) ||
+      (i.componentValue && i.componentValue.toLowerCase().includes(s)) ||
+      (i.componentVoltage && i.componentVoltage.toLowerCase().includes(s)) ||
+      (i.componentFootprint && i.componentFootprint.toLowerCase().includes(s)) ||
+      (i.screwType && i.screwType.toLowerCase().includes(s)) ||
+      (i.screwLength && i.screwLength.toLowerCase().includes(s)) ||
+      (i.screwShape && i.screwShape.toLowerCase().includes(s));
     const matchesCategory = categoryFilter === 'all' || i.category === categoryFilter;
     return matchesSearch && matchesCategory;
   });
