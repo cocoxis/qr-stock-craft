@@ -15,6 +15,14 @@ export interface StockItem {
   price: number;
   createdAt: string;
   updatedAt: string;
+  // Composants fields
+  componentValue?: string;
+  componentVoltage?: string;
+  componentFootprint?: string;
+  // Visserie fields
+  screwType?: string;
+  screwLength?: string;
+  screwShape?: string;
 }
 
 export interface Product {
