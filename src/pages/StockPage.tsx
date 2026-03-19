@@ -194,7 +194,7 @@ const StockPage = () => {
                    <Input placeholder="Lien fournisseur (URL)" value={form.supplierLink} onChange={(e) => setForm({ ...form, supplierLink: e.target.value })} type="url" />
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <Select value={form.category} onValueChange={(val) => setForm({ ...form, category: val === '__custom__' ? '' : val })}>
+                      <Select value={form.category} onValueChange={handleCategoryChange}>
                         <SelectTrigger>
                           <SelectValue placeholder="Catégorie" />
                         </SelectTrigger>
