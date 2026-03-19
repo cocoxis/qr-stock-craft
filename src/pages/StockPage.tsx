@@ -59,6 +59,29 @@ const StockPage = () => {
     return Array.from(cats).sort();
   }, [items]);
 
+  const generateSku = (category: string) => {
+    const prefixes: Record<string, string> = {
+      'composants': 'COMP',
+      'visserie': 'VIS',
+      'matières premières': 'MAT',
+      'électrique': 'ELEC',
+    };
+    const prefix = prefixes[category.toLowerCase()] || category.substring(0, 4).toUpperCase();
+    const existing = items.filter(i => i.sku.startsWith(prefix + '-')).length;
+    const num = String(existing + 1).padStart(2, '0');
+    const suffix = String(Math.floor(Math.random() * 1000)).padStart(3, '0');
+    return `${prefix}-${num}-${suffix}`;
+  };
+
+  const handleCategoryChange = (val: string) => {
+    const cat = val === '__custom__' ? '' : val;
+    const updates: Partial<typeof form> = { category: cat };
+    if (!editingId && cat && !form.sku) {
+      updates.sku = generateSku(cat);
+    }
+    setForm({ ...form, ...updates });
+  };
+
   const filtered = items.filter((i) => {
     const s = search.toLowerCase();
     const matchesSearch =
