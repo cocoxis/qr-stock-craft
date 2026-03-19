@@ -435,6 +435,40 @@ const StockPage = () => {
                   </div>
                 )}
 
+                {viewItem.category?.toLowerCase() === 'composants' && (viewItem.componentValue || viewItem.componentVoltage || viewItem.componentFootprint) && (
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="glass-card rounded-lg p-3">
+                      <p className="text-xs text-muted-foreground mb-1">Valeur</p>
+                      <p className="text-sm font-medium">{viewItem.componentValue || '—'}</p>
+                    </div>
+                    <div className="glass-card rounded-lg p-3">
+                      <p className="text-xs text-muted-foreground mb-1">Tension</p>
+                      <p className="text-sm font-medium">{viewItem.componentVoltage || '—'}</p>
+                    </div>
+                    <div className="glass-card rounded-lg p-3">
+                      <p className="text-xs text-muted-foreground mb-1">FootPrint</p>
+                      <p className="text-sm font-medium">{viewItem.componentFootprint || '—'}</p>
+                    </div>
+                  </div>
+                )}
+
+                {viewItem.category?.toLowerCase() === 'visserie' && (viewItem.screwType || viewItem.screwLength || viewItem.screwShape) && (
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="glass-card rounded-lg p-3">
+                      <p className="text-xs text-muted-foreground mb-1">Type</p>
+                      <p className="text-sm font-medium">{viewItem.screwType || '—'}</p>
+                    </div>
+                    <div className="glass-card rounded-lg p-3">
+                      <p className="text-xs text-muted-foreground mb-1">Longueur</p>
+                      <p className="text-sm font-medium">{viewItem.screwLength || '—'}</p>
+                    </div>
+                    <div className="glass-card rounded-lg p-3">
+                      <p className="text-xs text-muted-foreground mb-1">Forme</p>
+                      <p className="text-sm font-medium">{viewItem.screwShape || '—'}</p>
+                    </div>
+                  </div>
+                )}
+
                 <div className="flex gap-3 text-xs text-muted-foreground">
                   <span className="flex items-center gap-1">
                     <Calendar className="w-3 h-3" /> Créé le {new Date(viewItem.createdAt).toLocaleDateString('fr-FR')}
