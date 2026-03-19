@@ -104,6 +104,8 @@ const StockPage = () => {
       supplier: item.supplier || '', supplierRef: item.supplierRef || '', supplierLink: item.supplierLink || '',
       imageUrl: item.imageUrl || '', quantity: item.quantity, minQuantity: item.minQuantity, unit: item.unit,
       location: item.location, price: item.price, updatedAt: item.updatedAt || '',
+      componentValue: item.componentValue || '', componentVoltage: item.componentVoltage || '', componentFootprint: item.componentFootprint || '',
+      screwType: item.screwType || '', screwLength: item.screwLength || '', screwShape: item.screwShape || '',
     });
     setEditingId(item.id);
     setFormOpen(true);
