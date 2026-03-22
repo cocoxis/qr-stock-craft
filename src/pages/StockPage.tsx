@@ -411,132 +411,144 @@ const StockPage = () => {
           </DialogContent>
         </Dialog>
 
-        {/* Detail view dialog */}
+        {/* Detail view dialog — near-fullscreen */}
         <Dialog open={!!viewItem} onOpenChange={() => setViewItem(null)}>
-          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                {viewItem?.name}
-              </DialogTitle>
-              <DialogDescription className="font-mono text-xs">{viewItem?.sku}</DialogDescription>
-            </DialogHeader>
+          <DialogContent className="max-w-[95vw] w-full lg:max-w-5xl max-h-[92vh] overflow-y-auto p-0">
             {viewItem && (
-              <div className="space-y-5">
-                {viewItem.imageUrl && (
-                  <img src={viewItem.imageUrl} alt={viewItem.name} className="w-full h-64 object-cover rounded-lg border border-border" />
-                )}
+              <>
+                <div className="flex flex-col lg:flex-row">
+                  {/* Left: image */}
+                  {viewItem.imageUrl ? (
+                    <div className="lg:w-2/5 shrink-0 bg-muted/30 flex items-center justify-center p-4 lg:p-6 border-b lg:border-b-0 lg:border-r border-border">
+                      <img src={viewItem.imageUrl} alt={viewItem.name} className="w-full max-h-[300px] lg:max-h-[500px] object-contain rounded-lg" />
+                    </div>
+                  ) : null}
 
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  <div className="glass-card rounded-lg p-3">
-                    <p className="text-xs text-muted-foreground mb-1">Catégorie</p>
-                    <p className="text-sm font-medium">{viewItem.category || '—'}</p>
-                  </div>
-                  <div className="glass-card rounded-lg p-3">
-                    <p className="text-xs text-muted-foreground mb-1">Fournisseur</p>
-                    <p className="text-sm font-medium">{viewItem.supplier || '—'}</p>
-                    {viewItem.supplierRef && (
-                      <p className="text-xs font-mono text-muted-foreground mt-0.5">Réf: {viewItem.supplierRef}</p>
+                  {/* Right: details */}
+                  <div className={`flex-1 p-5 lg:p-6 space-y-5 ${!viewItem.imageUrl ? 'w-full' : ''}`}>
+                    <div>
+                      <DialogHeader className="p-0">
+                        <DialogTitle className="text-xl">{viewItem.name}</DialogTitle>
+                        <DialogDescription className="font-mono text-xs">{viewItem.sku}</DialogDescription>
+                      </DialogHeader>
+                      {viewItem.description && (
+                        <p className="text-sm text-muted-foreground mt-2">{viewItem.description}</p>
+                      )}
+                    </div>
+
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                      <div className="glass-card rounded-lg p-3">
+                        <p className="text-xs text-muted-foreground mb-1">Catégorie</p>
+                        <p className="text-sm font-medium">{viewItem.category || '—'}</p>
+                      </div>
+                      <div className="glass-card rounded-lg p-3">
+                        <p className="text-xs text-muted-foreground mb-1">Quantité</p>
+                        <p className={`text-sm font-mono font-semibold ${viewItem.quantity <= viewItem.minQuantity ? 'text-warning' : ''}`}>
+                          {viewItem.quantity} {viewItem.unit}
+                          <span className="text-xs text-muted-foreground font-normal ml-1">(min: {viewItem.minQuantity})</span>
+                        </p>
+                      </div>
+                      <div className="glass-card rounded-lg p-3">
+                        <p className="text-xs text-muted-foreground mb-1">Prix unitaire</p>
+                        <p className="text-sm font-mono font-semibold">{viewItem.price.toFixed(2)} €</p>
+                      </div>
+                      <div className="glass-card rounded-lg p-3">
+                        <p className="text-xs text-muted-foreground mb-1">Emplacement</p>
+                        <p className="text-sm font-mono font-medium">{viewItem.location || '—'}</p>
+                      </div>
+                      <div className="glass-card rounded-lg p-3">
+                        <p className="text-xs text-muted-foreground mb-1">Valeur totale</p>
+                        <p className="text-sm font-mono font-semibold text-primary">
+                          {(viewItem.quantity * viewItem.price).toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}
+                        </p>
+                      </div>
+                      <div className="glass-card rounded-lg p-3">
+                        <p className="text-xs text-muted-foreground mb-1">Fournisseur</p>
+                        <p className="text-sm font-medium">{viewItem.supplier || '—'}</p>
+                        {viewItem.supplierRef && (
+                          <p className="text-xs font-mono text-muted-foreground mt-0.5">Réf: {viewItem.supplierRef}</p>
+                        )}
+                        {viewItem.supplierLink && (
+                          <a href={viewItem.supplierLink} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline mt-0.5 block truncate">
+                            Lien fournisseur ↗
+                          </a>
+                        )}
+                      </div>
+                    </div>
+
+                    {viewItem.category?.toLowerCase() === 'composants' && (viewItem.componentValue || viewItem.componentVoltage || viewItem.componentFootprint) && (
+                      <div>
+                        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Composant</p>
+                        <div className="grid grid-cols-3 gap-3">
+                          <div className="glass-card rounded-lg p-3">
+                            <p className="text-xs text-muted-foreground mb-1">Valeur</p>
+                            <p className="text-sm font-medium">{viewItem.componentValue || '—'}</p>
+                          </div>
+                          <div className="glass-card rounded-lg p-3">
+                            <p className="text-xs text-muted-foreground mb-1">Tension</p>
+                            <p className="text-sm font-medium">{viewItem.componentVoltage || '—'}</p>
+                          </div>
+                          <div className="glass-card rounded-lg p-3">
+                            <p className="text-xs text-muted-foreground mb-1">FootPrint</p>
+                            <p className="text-sm font-medium">{viewItem.componentFootprint || '—'}</p>
+                          </div>
+                        </div>
+                      </div>
                     )}
-                    {viewItem.supplierLink && (
-                      <a href={viewItem.supplierLink} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline mt-0.5 block truncate">
-                        {viewItem.supplierLink}
-                      </a>
+
+                    {viewItem.category?.toLowerCase() === 'visserie' && (viewItem.screwType || viewItem.screwLength || viewItem.screwShape) && (
+                      <div>
+                        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Visserie</p>
+                        <div className="grid grid-cols-3 gap-3">
+                          <div className="glass-card rounded-lg p-3">
+                            <p className="text-xs text-muted-foreground mb-1">Type</p>
+                            <p className="text-sm font-medium">{viewItem.screwType || '—'}</p>
+                          </div>
+                          <div className="glass-card rounded-lg p-3">
+                            <p className="text-xs text-muted-foreground mb-1">Longueur</p>
+                            <p className="text-sm font-medium">{viewItem.screwLength || '—'}</p>
+                          </div>
+                          <div className="glass-card rounded-lg p-3">
+                            <p className="text-xs text-muted-foreground mb-1">Forme</p>
+                            <p className="text-sm font-medium">{viewItem.screwShape || '—'}</p>
+                          </div>
+                        </div>
+                      </div>
                     )}
-                  </div>
-                  <div className="glass-card rounded-lg p-3">
-                    <p className="text-xs text-muted-foreground mb-1">Quantité</p>
-                    <p className={`text-sm font-mono font-semibold ${viewItem.quantity <= viewItem.minQuantity ? 'text-warning' : ''}`}>
-                      {viewItem.quantity} {viewItem.unit}
-                      <span className="text-xs text-muted-foreground font-normal ml-1">(min: {viewItem.minQuantity})</span>
-                    </p>
-                  </div>
-                  <div className="glass-card rounded-lg p-3">
-                    <p className="text-xs text-muted-foreground mb-1">Prix unitaire</p>
-                    <p className="text-sm font-mono font-semibold">{viewItem.price.toFixed(2)} €</p>
-                  </div>
-                  <div className="glass-card rounded-lg p-3">
-                    <p className="text-xs text-muted-foreground mb-1">Emplacement</p>
-                    <p className="text-sm font-mono font-medium">{viewItem.location || '—'}</p>
-                  </div>
-                  <div className="glass-card rounded-lg p-3">
-                    <p className="text-xs text-muted-foreground mb-1">Valeur totale</p>
-                    <p className="text-sm font-mono font-semibold text-primary">
-                      {(viewItem.quantity * viewItem.price).toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}
-                    </p>
+
+                    <div className="flex items-center gap-4 pt-2">
+                      <div className="shrink-0">
+                        <QRCodeDisplay
+                          value={JSON.stringify({ type: 'stock', id: viewItem.id, sku: viewItem.sku, name: viewItem.name })}
+                          size={80}
+                          label={viewItem.sku}
+                          showPrint
+                          itemName={viewItem.name}
+                        />
+                      </div>
+                      <div className="flex-1 text-xs text-muted-foreground space-y-1">
+                        <span className="flex items-center gap-1">
+                          <Calendar className="w-3 h-3" /> Créé le {new Date(viewItem.createdAt).toLocaleDateString('fr-FR')}
+                        </span>
+                        {viewItem.updatedAt && viewItem.updatedAt !== viewItem.createdAt && (
+                          <span className="flex items-center gap-1">
+                            <Clock className="w-3 h-3" /> Modifié le {new Date(viewItem.updatedAt).toLocaleDateString('fr-FR')}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    <DialogFooter className="gap-2 sm:gap-0 pt-2">
+                      <Button variant="outline" onClick={() => { setViewItem(null); handleEdit(viewItem); }}>
+                        <Edit2 className="w-3.5 h-3.5 mr-2" /> Modifier
+                      </Button>
+                      <Button variant="destructive" onClick={() => { setViewItem(null); setDeleteConfirm(viewItem); }}>
+                        <Trash2 className="w-3.5 h-3.5 mr-2" /> Supprimer
+                      </Button>
+                    </DialogFooter>
                   </div>
                 </div>
-
-                {viewItem.description && (
-                  <div className="glass-card rounded-lg p-3">
-                    <p className="text-xs text-muted-foreground mb-1">Description</p>
-                    <p className="text-sm">{viewItem.description}</p>
-                  </div>
-                )}
-
-                {viewItem.category?.toLowerCase() === 'composants' && (viewItem.componentValue || viewItem.componentVoltage || viewItem.componentFootprint) && (
-                  <div className="grid grid-cols-3 gap-3">
-                    <div className="glass-card rounded-lg p-3">
-                      <p className="text-xs text-muted-foreground mb-1">Valeur</p>
-                      <p className="text-sm font-medium">{viewItem.componentValue || '—'}</p>
-                    </div>
-                    <div className="glass-card rounded-lg p-3">
-                      <p className="text-xs text-muted-foreground mb-1">Tension</p>
-                      <p className="text-sm font-medium">{viewItem.componentVoltage || '—'}</p>
-                    </div>
-                    <div className="glass-card rounded-lg p-3">
-                      <p className="text-xs text-muted-foreground mb-1">FootPrint</p>
-                      <p className="text-sm font-medium">{viewItem.componentFootprint || '—'}</p>
-                    </div>
-                  </div>
-                )}
-
-                {viewItem.category?.toLowerCase() === 'visserie' && (viewItem.screwType || viewItem.screwLength || viewItem.screwShape) && (
-                  <div className="grid grid-cols-3 gap-3">
-                    <div className="glass-card rounded-lg p-3">
-                      <p className="text-xs text-muted-foreground mb-1">Type</p>
-                      <p className="text-sm font-medium">{viewItem.screwType || '—'}</p>
-                    </div>
-                    <div className="glass-card rounded-lg p-3">
-                      <p className="text-xs text-muted-foreground mb-1">Longueur</p>
-                      <p className="text-sm font-medium">{viewItem.screwLength || '—'}</p>
-                    </div>
-                    <div className="glass-card rounded-lg p-3">
-                      <p className="text-xs text-muted-foreground mb-1">Forme</p>
-                      <p className="text-sm font-medium">{viewItem.screwShape || '—'}</p>
-                    </div>
-                  </div>
-                )}
-
-                <div className="flex gap-3 text-xs text-muted-foreground">
-                  <span className="flex items-center gap-1">
-                    <Calendar className="w-3 h-3" /> Créé le {new Date(viewItem.createdAt).toLocaleDateString('fr-FR')}
-                  </span>
-                  {viewItem.updatedAt && viewItem.updatedAt !== viewItem.createdAt && (
-                    <span className="flex items-center gap-1">
-                      <Clock className="w-3 h-3" /> Modifié le {new Date(viewItem.updatedAt).toLocaleDateString('fr-FR')}
-                    </span>
-                  )}
-                </div>
-
-                <div className="flex items-center justify-center">
-                  <QRCodeDisplay
-                    value={JSON.stringify({ type: 'stock', id: viewItem.id, sku: viewItem.sku, name: viewItem.name })}
-                    size={120}
-                    label={viewItem.sku}
-                    showPrint
-                    itemName={viewItem.name}
-                  />
-                </div>
-
-                <DialogFooter className="gap-2 sm:gap-0">
-                  <Button variant="outline" onClick={() => { setViewItem(null); handleEdit(viewItem); }}>
-                    <Edit2 className="w-3.5 h-3.5 mr-2" /> Modifier
-                  </Button>
-                  <Button variant="destructive" onClick={() => { setViewItem(null); setDeleteConfirm(viewItem); }}>
-                    <Trash2 className="w-3.5 h-3.5 mr-2" /> Supprimer
-                  </Button>
-                </DialogFooter>
-              </div>
+              </>
             )}
           </DialogContent>
         </Dialog>
