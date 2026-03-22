@@ -1,5 +1,6 @@
 import { useState, useRef, useMemo } from 'react';
 import { Plus, Search, QrCode, Trash2, Edit2, Camera, Printer, ImageIcon, Eye, X, Filter, Calendar, Clock } from 'lucide-react';
+import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
 import AppLayout from '@/components/AppLayout';
 import QRCodeDisplay from '@/components/QRCodeDisplay';
 import QRScanner from '@/components/QRScanner';
@@ -336,7 +337,14 @@ const StockPage = () => {
                     <td className="p-3">
                       <div className="flex items-center gap-2">
                         {item.imageUrl && (
-                          <img src={item.imageUrl} alt={item.name} className="w-8 h-8 rounded object-cover border border-border" />
+                          <HoverCard openDelay={200} closeDelay={100}>
+                            <HoverCardTrigger asChild>
+                              <img src={item.imageUrl} alt={item.name} className="w-8 h-8 rounded object-cover border border-border cursor-zoom-in" />
+                            </HoverCardTrigger>
+                            <HoverCardContent side="right" className="w-64 p-1">
+                              <img src={item.imageUrl} alt={item.name} className="w-full h-auto rounded object-contain" />
+                            </HoverCardContent>
+                          </HoverCard>
                         )}
                         <div>
                           <p className="font-medium">{item.name}</p>
