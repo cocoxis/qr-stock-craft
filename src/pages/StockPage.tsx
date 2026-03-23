@@ -1,5 +1,5 @@
-import { useState, useRef, useMemo, useEffect } from 'react';
-import { Plus, Search, QrCode, Trash2, Edit2, Camera, Printer, ImageIcon, X, Filter } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import { Plus, Search, QrCode, Trash2, Edit2, Camera, Printer, Filter } from 'lucide-react';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
 import AppLayout from '@/components/AppLayout';
 import QRCodeDisplay from '@/components/QRCodeDisplay';
@@ -10,34 +10,15 @@ import { initialStockItems } from '@/data/initialData';
 import type { StockItem } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-  DialogFooter,
-  DialogDescription,
+  Dialog, DialogContent, DialogHeader, DialogTitle,
 } from '@/components/ui/dialog';
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-
-const emptyItem: Omit<StockItem, 'id' | 'createdAt'> = {
-  name: '', sku: '', category: '', description: '', supplier: '', supplierRef: '', supplierLink: '', imageUrl: '', quantity: 0, minQuantity: 0, unit: 'pcs', location: '', price: 0, updatedAt: '',
-  componentValue: '', componentVoltage: '', componentFootprint: '',
-  screwType: '', screwLength: '', screwShape: '',
-};
 
 const StockPage = () => {
   const { getStorageKey } = useWorkspaceContext();
@@ -45,52 +26,16 @@ const StockPage = () => {
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [qrItem, setQrItem] = useState<StockItem | null>(null);
-  const [formOpen, setFormOpen] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [form, setForm] = useState(emptyItem);
   const [scannerOpen, setScannerOpen] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<StockItem | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const highlightId = searchParams.get('highlight');
-  const editParam = searchParams.get('edit');
-
-  // Auto-open edit form if redirected from detail page
-  useEffect(() => {
-    if (editParam) {
-      const item = items.find(i => i.id === editParam);
-      if (item) handleEdit(item);
-    }
-  }, [editParam]);
 
   const categories = useMemo(() => {
     const cats = new Set(items.map(i => i.category).filter(Boolean));
     return Array.from(cats).sort();
   }, [items]);
-
-  const generateSku = (category: string) => {
-    const prefixes: Record<string, string> = {
-      'composants': 'COMP',
-      'visserie': 'VIS',
-      'matières premières': 'MAT',
-      'électrique': 'ELEC',
-    };
-    const prefix = prefixes[category.toLowerCase()] || category.substring(0, 4).toUpperCase();
-    const existing = items.filter(i => i.sku.startsWith(prefix + '-')).length;
-    const num = String(existing + 1).padStart(2, '0');
-    const suffix = String(Math.floor(Math.random() * 1000)).padStart(3, '0');
-    return `${prefix}-${num}-${suffix}`;
-  };
-
-  const handleCategoryChange = (val: string) => {
-    const cat = val === '__custom__' ? '' : val;
-    const updates: Partial<typeof form> = { category: cat };
-    if (!editingId && cat && !form.sku) {
-      updates.sku = generateSku(cat);
-    }
-    setForm({ ...form, ...updates });
-  };
 
   const filtered = items.filter((i) => {
     const s = search.toLowerCase();
@@ -108,48 +53,6 @@ const StockPage = () => {
     const matchesCategory = categoryFilter === 'all' || i.category === categoryFilter;
     return matchesSearch && matchesCategory;
   });
-
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setForm({ ...form, imageUrl: reader.result as string });
-    };
-    reader.readAsDataURL(file);
-  };
-
-  const handleSave = () => {
-    if (!form.name || !form.sku) return;
-    const now = new Date().toISOString().split('T')[0];
-    if (editingId) {
-      setItems(items.map((i) => (i.id === editingId ? { ...i, ...form, updatedAt: now } : i)));
-    } else {
-      const newItem: StockItem = {
-        ...form,
-        id: `stk-${Date.now()}`,
-        createdAt: now,
-        updatedAt: now,
-      };
-      setItems([...items, newItem]);
-    }
-    setFormOpen(false);
-    setEditingId(null);
-    setForm(emptyItem);
-  };
-
-  const handleEdit = (item: StockItem) => {
-    setForm({
-      name: item.name, sku: item.sku, category: item.category, description: item.description || '',
-      supplier: item.supplier || '', supplierRef: item.supplierRef || '', supplierLink: item.supplierLink || '',
-      imageUrl: item.imageUrl || '', quantity: item.quantity, minQuantity: item.minQuantity, unit: item.unit,
-      location: item.location, price: item.price, updatedAt: item.updatedAt || '',
-      componentValue: item.componentValue || '', componentVoltage: item.componentVoltage || '', componentFootprint: item.componentFootprint || '',
-      screwType: item.screwType || '', screwLength: item.screwLength || '', screwShape: item.screwShape || '',
-    });
-    setEditingId(item.id);
-    setFormOpen(true);
-  };
 
   const handleDeleteConfirmed = () => {
     if (deleteConfirm) {
@@ -169,25 +72,21 @@ const StockPage = () => {
         table { width: 100%; border-collapse: collapse; font-size: 12px; }
         th, td { border: 1px solid #ddd; padding: 6px 8px; text-align: left; }
         th { background: #f5f5f5; font-weight: 600; }
-        .right { text-align: right; }
-        .mono { font-family: monospace; }
+        .right { text-align: right; } .mono { font-family: monospace; }
         @media print { body { padding: 0; } }
       </style></head><body>
       <h1>Liste de stock — ${new Date().toLocaleDateString('fr-FR')}</h1>
-      <table>
-        <thead><tr>
-          <th>Article</th><th>SKU</th><th>Catégorie</th><th>Fournisseur</th>
-          <th class="right">Quantité</th><th>Empl.</th><th class="right">Prix unit.</th>
-        </tr></thead>
-        <tbody>
-          ${filtered.map(i => `<tr>
-            <td>${i.name}</td><td class="mono">${i.sku}</td><td>${i.category}</td>
-            <td>${i.supplier || '—'}</td>
-            <td class="right mono">${i.quantity} ${i.unit}</td><td class="mono">${i.location}</td>
-            <td class="right mono">${i.price.toFixed(2)}€</td>
-          </tr>`).join('')}
-        </tbody>
-      </table></body></html>
+      <table><thead><tr>
+        <th>Article</th><th>SKU</th><th>Catégorie</th><th>Fournisseur</th>
+        <th class="right">Quantité</th><th>Empl.</th><th class="right">Prix unit.</th>
+      </tr></thead><tbody>
+        ${filtered.map(i => `<tr>
+          <td>${i.name}</td><td class="mono">${i.sku}</td><td>${i.category}</td>
+          <td>${i.supplier || '—'}</td>
+          <td class="right mono">${i.quantity} ${i.unit}</td><td class="mono">${i.location}</td>
+          <td class="right mono">${i.price.toFixed(2)}€</td>
+        </tr>`).join('')}
+      </tbody></table></body></html>
     `);
     printWindow.document.close();
     printWindow.print();
@@ -208,91 +107,9 @@ const StockPage = () => {
             <Button variant="outline" size="icon" onClick={handlePrint} title="Imprimer">
               <Printer className="w-4 h-4" />
             </Button>
-            <Dialog open={formOpen} onOpenChange={(open) => { setFormOpen(open); if (!open) { setEditingId(null); setForm(emptyItem); } }}>
-              <DialogTrigger asChild>
-                <Button><Plus className="w-4 h-4 mr-2" />Ajouter</Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-[95vw] w-full lg:max-w-4xl max-h-[92vh] overflow-y-auto">
-                <DialogHeader>
-                  <DialogTitle>{editingId ? 'Modifier' : 'Nouvel article'}</DialogTitle>
-                </DialogHeader>
-                <div className="grid gap-3 mt-2">
-                  <Input placeholder="Nom *" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
-                  <Input placeholder="SKU *" value={form.sku} onChange={(e) => setForm({ ...form, sku: e.target.value })} className="font-mono" />
-                  <Textarea placeholder="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={2} />
-                  <div className="grid grid-cols-2 gap-3">
-                    <Input placeholder="Fournisseur" value={form.supplier} onChange={(e) => setForm({ ...form, supplier: e.target.value })} />
-                    <Input placeholder="Réf. fournisseur" value={form.supplierRef} onChange={(e) => setForm({ ...form, supplierRef: e.target.value })} className="font-mono" />
-                   </div>
-                   <Input placeholder="Lien fournisseur (URL)" value={form.supplierLink} onChange={(e) => setForm({ ...form, supplierLink: e.target.value })} type="url" />
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <Select value={form.category} onValueChange={handleCategoryChange}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Catégorie" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {categories.map(cat => (
-                            <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                          ))}
-                          <SelectItem value="__custom__">+ Nouvelle catégorie</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      {(!form.category || !categories.includes(form.category)) && (
-                        <Input placeholder="Nouvelle catégorie" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} className="mt-2" />
-                      )}
-                    </div>
-                    <Input placeholder="Emplacement" value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} className="font-mono" />
-                  </div>
-                  <div className="grid grid-cols-3 gap-3">
-                    <Input type="number" placeholder="Quantité" value={form.quantity || ''} onChange={(e) => setForm({ ...form, quantity: Number(e.target.value) })} />
-                    <Input type="number" placeholder="Min" value={form.minQuantity || ''} onChange={(e) => setForm({ ...form, minQuantity: Number(e.target.value) })} />
-                    <Input placeholder="Unité" value={form.unit} onChange={(e) => setForm({ ...form, unit: e.target.value })} />
-                  </div>
-                  <Input type="number" step="0.01" placeholder="Prix unitaire (€)" value={form.price || ''} onChange={(e) => setForm({ ...form, price: Number(e.target.value) })} />
-
-                  {form.category?.toLowerCase() === 'composants' && (
-                    <div className="border border-border rounded-lg p-3 space-y-3">
-                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Champs Composants</p>
-                      <div className="grid grid-cols-3 gap-3">
-                        <Input placeholder="Valeur (ex: 10kΩ)" value={form.componentValue || ''} onChange={(e) => setForm({ ...form, componentValue: e.target.value })} />
-                        <Input placeholder="Tension (ex: 25V)" value={form.componentVoltage || ''} onChange={(e) => setForm({ ...form, componentVoltage: e.target.value })} />
-                        <Input placeholder="FootPrint (ex: 0805)" value={form.componentFootprint || ''} onChange={(e) => setForm({ ...form, componentFootprint: e.target.value })} />
-                      </div>
-                    </div>
-                  )}
-
-                  {form.category?.toLowerCase() === 'visserie' && (
-                    <div className="border border-border rounded-lg p-3 space-y-3">
-                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Champs Visserie</p>
-                      <div className="grid grid-cols-3 gap-3">
-                        <Input placeholder="Type (ex: CHC, HEX)" value={form.screwType || ''} onChange={(e) => setForm({ ...form, screwType: e.target.value })} />
-                        <Input placeholder="Longueur (ex: 20mm)" value={form.screwLength || ''} onChange={(e) => setForm({ ...form, screwLength: e.target.value })} />
-                        <Input placeholder="Forme (ex: Cylindrique)" value={form.screwShape || ''} onChange={(e) => setForm({ ...form, screwShape: e.target.value })} />
-                      </div>
-                    </div>
-                  )}
-                  
-                  <div>
-                    <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
-                    <Button type="button" variant="outline" className="w-full" onClick={() => fileInputRef.current?.click()}>
-                      <ImageIcon className="w-4 h-4 mr-2" />
-                      {form.imageUrl ? 'Changer l\'image' : 'Joindre une image'}
-                    </Button>
-                    {form.imageUrl && (
-                      <div className="mt-2 relative">
-                        <img src={form.imageUrl} alt="Aperçu" className="w-full h-32 object-cover rounded-lg border border-border" />
-                        <Button variant="destructive" size="icon" className="absolute top-1 right-1 h-6 w-6" onClick={() => setForm({ ...form, imageUrl: '' })}>
-                          <Trash2 className="w-3 h-3" />
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                  
-                  <Button onClick={handleSave} className="w-full mt-2">{editingId ? 'Enregistrer' : 'Ajouter'}</Button>
-                </div>
-              </DialogContent>
-            </Dialog>
+            <Button onClick={() => navigate('/stock/new/edit')}>
+              <Plus className="w-4 h-4 mr-2" />Ajouter
+            </Button>
           </div>
         </div>
 
@@ -300,12 +117,7 @@ const StockPage = () => {
         <div className="flex gap-3 mb-4">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input
-              placeholder="Rechercher par nom, SKU, fournisseur..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-10"
-            />
+            <Input placeholder="Rechercher par nom, SKU, fournisseur..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10" />
           </div>
           <Select value={categoryFilter} onValueChange={setCategoryFilter}>
             <SelectTrigger className="w-[180px]">
@@ -314,9 +126,7 @@ const StockPage = () => {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Toutes catégories</SelectItem>
-              {categories.map(cat => (
-                <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-              ))}
+              {categories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
             </SelectContent>
           </Select>
         </div>
@@ -376,7 +186,7 @@ const StockPage = () => {
                         <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setQrItem(item)}>
                           <QrCode className="w-3.5 h-3.5" />
                         </Button>
-                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleEdit(item)}>
+                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => navigate(`/stock/${item.id}/edit`)}>
                           <Edit2 className="w-3.5 h-3.5" />
                         </Button>
                         <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => setDeleteConfirm(item)}>
@@ -416,7 +226,6 @@ const StockPage = () => {
             )}
           </DialogContent>
         </Dialog>
-
 
         {/* Delete confirmation */}
         <AlertDialog open={!!deleteConfirm} onOpenChange={() => setDeleteConfirm(null)}>
