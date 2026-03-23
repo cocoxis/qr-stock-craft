@@ -56,6 +56,14 @@ const StockPage = () => {
   const highlightId = searchParams.get('highlight');
   const editParam = searchParams.get('edit');
 
+  // Auto-open edit form if redirected from detail page
+  useEffect(() => {
+    if (editParam) {
+      const item = items.find(i => i.id === editParam);
+      if (item) handleEdit(item);
+    }
+  }, [editParam]);
+
   const categories = useMemo(() => {
     const cats = new Set(items.map(i => i.category).filter(Boolean));
     return Array.from(cats).sort();
