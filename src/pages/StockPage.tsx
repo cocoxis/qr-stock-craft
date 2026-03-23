@@ -50,7 +50,7 @@ const StockPage = () => {
   const [form, setForm] = useState(emptyItem);
   const [scannerOpen, setScannerOpen] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<StockItem | null>(null);
-  const [viewItem, setViewItem] = useState<StockItem | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [searchParams] = useSearchParams();
   const highlightId = searchParams.get('highlight');
