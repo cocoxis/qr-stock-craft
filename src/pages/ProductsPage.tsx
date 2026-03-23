@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, Search, QrCode, Trash2, Edit2, Camera, Printer } from 'lucide-react';
+import { Plus, Search, QrCode, Trash2, Edit2, Camera, Package } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import QRCodeDisplay from '@/components/QRCodeDisplay';
 import QRScanner from '@/components/QRScanner';
@@ -11,17 +11,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
+  Dialog, DialogContent, DialogHeader, DialogTitle,
 } from '@/components/ui/dialog';
-import { useSearchParams } from 'react-router-dom';
-
-const emptyProduct: Omit<Product, 'id' | 'createdAt'> = {
-  name: '', sku: '', description: '', assemblyListId: '', quantityProduced: 0, minQuantity: 0,
-};
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { useNavigate } from 'react-router-dom';
 
 const ProductsPage = () => {
   const { getStorageKey } = useWorkspaceContext();
@@ -29,43 +25,25 @@ const ProductsPage = () => {
   const [assemblyLists] = useWorkspaceStorage<AssemblyList[]>(getStorageKey('assemblyLists'), initialAssemblyLists);
   const [search, setSearch] = useState('');
   const [qrProduct, setQrProduct] = useState<Product | null>(null);
-  const [formOpen, setFormOpen] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [form, setForm] = useState(emptyProduct);
   const [scannerOpen, setScannerOpen] = useState(false);
-  const [searchParams] = useSearchParams();
-  const highlightId = searchParams.get('highlight');
+  const [deleteConfirm, setDeleteConfirm] = useState<Product | null>(null);
+  const navigate = useNavigate();
 
   const filtered = products.filter(
     (p) =>
       p.name.toLowerCase().includes(search.toLowerCase()) ||
-      p.sku.toLowerCase().includes(search.toLowerCase())
+      p.sku.toLowerCase().includes(search.toLowerCase()) ||
+      (p.description && p.description.toLowerCase().includes(search.toLowerCase()))
   );
 
-  const handleSave = () => {
-    if (!form.name || !form.sku) return;
-    if (editingId) {
-      setProducts(products.map((p) => (p.id === editingId ? { ...p, ...form } : p)));
-    } else {
-      const newProduct: Product = {
-        ...form,
-        id: `prd-${Date.now()}`,
-        createdAt: new Date().toISOString().split('T')[0],
-      };
-      setProducts([...products, newProduct]);
-    }
-    setFormOpen(false);
-    setEditingId(null);
-    setForm(emptyProduct);
-  };
-
-  const handleEdit = (product: Product) => {
-    setForm({ name: product.name, sku: product.sku, description: product.description, assemblyListId: product.assemblyListId, quantityProduced: product.quantityProduced, minQuantity: product.minQuantity || 0 });
-    setEditingId(product.id);
-    setFormOpen(true);
-  };
-
   const getAssemblyName = (id: string) => assemblyLists.find((a) => a.id === id)?.name ?? '—';
+
+  const handleDeleteConfirmed = () => {
+    if (deleteConfirm) {
+      setProducts(products.filter(p => p.id !== deleteConfirm.id));
+      setDeleteConfirm(null);
+    }
+  };
 
   return (
     <AppLayout>
@@ -73,82 +51,95 @@ const ProductsPage = () => {
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-2xl font-bold tracking-tight">Produits</h1>
-            <p className="text-muted-foreground text-sm mt-1">{products.length} produits</p>
+            <p className="text-muted-foreground text-sm mt-1">{filtered.length}/{products.length} produits</p>
           </div>
           <div className="flex gap-2">
             <Button variant="outline" size="icon" onClick={() => setScannerOpen(true)} title="Scanner QR">
               <Camera className="w-4 h-4" />
             </Button>
-            <Dialog open={formOpen} onOpenChange={(open) => { setFormOpen(open); if (!open) { setEditingId(null); setForm(emptyProduct); } }}>
-              <DialogTrigger asChild>
-                <Button><Plus className="w-4 h-4 mr-2" />Nouveau produit</Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-md">
-                <DialogHeader>
-                  <DialogTitle>{editingId ? 'Modifier' : 'Nouveau produit'}</DialogTitle>
-                </DialogHeader>
-                <div className="grid gap-3 mt-2">
-                  <Input placeholder="Nom *" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
-                  <Input placeholder="SKU *" value={form.sku} onChange={(e) => setForm({ ...form, sku: e.target.value })} className="font-mono" />
-                  <Input placeholder="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
-                  <Select value={form.assemblyListId} onValueChange={(v) => setForm({ ...form, assemblyListId: v })}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Liste d'assemblage" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {assemblyLists.map((a) => (
-                        <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <Input type="number" placeholder="Quantité produite" value={form.quantityProduced || ''} onChange={(e) => setForm({ ...form, quantityProduced: Number(e.target.value) })} />
-                  <Input type="number" placeholder="Seuil stock bas" value={form.minQuantity || ''} onChange={(e) => setForm({ ...form, minQuantity: Number(e.target.value) })} />
-                  <Button onClick={handleSave} className="w-full mt-2">{editingId ? 'Enregistrer' : 'Créer'}</Button>
-                </div>
-              </DialogContent>
-            </Dialog>
+            <Button onClick={() => navigate('/products/new/edit')}>
+              <Plus className="w-4 h-4 mr-2" />Nouveau produit
+            </Button>
           </div>
         </div>
 
+        {/* Search */}
         <div className="relative mb-4">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input placeholder="Rechercher..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10" />
+          <Input placeholder="Rechercher par nom, SKU, description..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10" />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filtered.map((product) => (
-            <div key={product.id} className={`glass-card rounded-xl p-5 ${highlightId === product.id ? 'ring-2 ring-primary/50' : ''}`}>
-              <div className="flex justify-between items-start mb-3">
-                <div>
-                  <h3 className="font-semibold">{product.name}</h3>
-                  <p className="text-xs font-mono text-muted-foreground">{product.sku}</p>
-                </div>
-                <div className="flex gap-1">
-                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setQrProduct(product)}>
-                    <QrCode className="w-3.5 h-3.5" />
-                  </Button>
-                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleEdit(product)}>
-                    <Edit2 className="w-3.5 h-3.5" />
-                  </Button>
-                  <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => setProducts(products.filter(p => p.id !== product.id))}>
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </Button>
-                </div>
-              </div>
-              {product.description && <p className="text-sm text-muted-foreground mb-3">{product.description}</p>}
-              <div className="flex justify-between text-xs">
-                <span className="text-muted-foreground">Assemblage: {getAssemblyName(product.assemblyListId)}</span>
-                <span className={`font-mono font-semibold ${product.minQuantity > 0 && product.quantityProduced <= product.minQuantity ? 'text-warning' : ''}`}>
-                  {product.quantityProduced} unités
-                  {product.minQuantity > 0 && (
-                    <span className="text-muted-foreground font-normal ml-1">(min: {product.minQuantity})</span>
-                  )}
-                </span>
-              </div>
-            </div>
-          ))}
+        {/* Table */}
+        <div className="glass-card rounded-xl overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border/60">
+                  <th className="text-left p-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Produit</th>
+                  <th className="text-left p-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">SKU</th>
+                  <th className="text-left p-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Assemblage</th>
+                  <th className="text-right p-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Quantité</th>
+                  <th className="text-left p-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Date</th>
+                  <th className="text-right p-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.map((product) => (
+                  <tr
+                    key={product.id}
+                    className="border-b border-border/30 hover:bg-muted/50 transition-colors cursor-pointer"
+                    onClick={() => navigate(`/products/${product.id}`)}
+                  >
+                    <td className="p-3">
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 rounded bg-secondary flex items-center justify-center shrink-0">
+                          <Package className="w-4 h-4 text-secondary-foreground" />
+                        </div>
+                        <div>
+                          <p className="font-medium">{product.name}</p>
+                          {product.description && <p className="text-xs text-muted-foreground truncate max-w-[250px]">{product.description}</p>}
+                        </div>
+                      </div>
+                    </td>
+                    <td className="p-3 font-mono text-xs text-muted-foreground">{product.sku}</td>
+                    <td className="p-3">
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-secondary text-secondary-foreground">
+                        {getAssemblyName(product.assemblyListId)}
+                      </span>
+                    </td>
+                    <td className={`p-3 text-right font-mono font-semibold ${product.minQuantity > 0 && product.quantityProduced <= product.minQuantity ? 'text-destructive' : ''}`}>
+                      {product.quantityProduced}
+                      {product.minQuantity > 0 && (
+                        <span className="text-xs text-muted-foreground font-normal ml-1">(min: {product.minQuantity})</span>
+                      )}
+                    </td>
+                    <td className="p-3 text-xs text-muted-foreground">{new Date(product.createdAt).toLocaleDateString('fr-FR')}</td>
+                    <td className="p-3 text-right">
+                      <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
+                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setQrProduct(product)}>
+                          <QrCode className="w-3.5 h-3.5" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => navigate(`/products/${product.id}/edit`)}>
+                          <Edit2 className="w-3.5 h-3.5" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => setDeleteConfirm(product)}>
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+                {filtered.length === 0 && (
+                  <tr>
+                    <td colSpan={6} className="p-8 text-center text-muted-foreground">Aucun produit trouvé</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
 
+        {/* QR Code dialog */}
         <Dialog open={!!qrProduct} onOpenChange={() => setQrProduct(null)}>
           <DialogContent className="max-w-xs text-center">
             <DialogHeader>
@@ -167,6 +158,24 @@ const ProductsPage = () => {
             )}
           </DialogContent>
         </Dialog>
+
+        {/* Delete confirmation */}
+        <AlertDialog open={!!deleteConfirm} onOpenChange={() => setDeleteConfirm(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
+              <AlertDialogDescription>
+                Supprimer <span className="font-semibold">{deleteConfirm?.name}</span> ({deleteConfirm?.sku}) ? Cette action est irréversible.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Annuler</AlertDialogCancel>
+              <AlertDialogAction onClick={handleDeleteConfirmed} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                Supprimer
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
 
         <QRScanner open={scannerOpen} onOpenChange={setScannerOpen} />
       </div>
