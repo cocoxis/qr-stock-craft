@@ -333,7 +333,7 @@ const StockPage = () => {
                   <tr
                     key={item.id}
                     className={`border-b border-border/30 hover:bg-muted/50 transition-colors cursor-pointer ${highlightId === item.id ? 'bg-primary/10 ring-1 ring-primary/30' : ''}`}
-                    onClick={() => setViewItem(item)}
+                    onClick={() => navigate(`/stock/${item.id}`)}
                   >
                     <td className="p-3">
                       <div className="flex items-center gap-2">
