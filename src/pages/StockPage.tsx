@@ -51,9 +51,10 @@ const StockPage = () => {
   const [scannerOpen, setScannerOpen] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<StockItem | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const highlightId = searchParams.get('highlight');
+  const editParam = searchParams.get('edit');
 
   const categories = useMemo(() => {
     const cats = new Set(items.map(i => i.category).filter(Boolean));
