@@ -1,5 +1,5 @@
 import { useState, useRef, useMemo } from 'react';
-import { Plus, Search, QrCode, Trash2, Edit2, Camera, Printer, ImageIcon, Eye, X, Filter, Calendar, Clock } from 'lucide-react';
+import { Plus, Search, QrCode, Trash2, Edit2, Camera, Printer, ImageIcon, X, Filter } from 'lucide-react';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
 import AppLayout from '@/components/AppLayout';
 import QRCodeDisplay from '@/components/QRCodeDisplay';
