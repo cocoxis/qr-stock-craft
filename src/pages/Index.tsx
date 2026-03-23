@@ -208,7 +208,7 @@ const Index = () => {
                   return (
                     <div
                       key={item.id}
-                      onClick={() => navigate(`/stock?highlight=${item.id}`)}
+                      onClick={() => navigate(`/stock/${item.id}`)}
                       className="flex items-center gap-4 p-3 rounded-lg hover:bg-muted/60 cursor-pointer transition-colors group"
                     >
                       {item.imageUrl ? (

@@ -12,6 +12,7 @@ import AssemblyPage from "./pages/AssemblyPage";
 import AuthPage from "./pages/AuthPage";
 import PendingApprovalPage from "./pages/PendingApprovalPage";
 import AdminUsersPage from "./pages/AdminUsersPage";
+import StockItemDetailPage from "./pages/StockItemDetailPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -48,6 +49,7 @@ function AppRoutes() {
       <Routes>
         <Route path="/" element={<Index />} />
         <Route path="/stock" element={<StockPage />} />
+        <Route path="/stock/:id" element={<StockItemDetailPage />} />
         <Route path="/products" element={<ProductsPage />} />
         <Route path="/assembly" element={<AssemblyPage />} />
         {isAdmin && <Route path="/admin/users" element={<AdminUsersPage />} />}

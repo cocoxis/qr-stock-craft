@@ -32,7 +32,7 @@ const QRScanner = ({ open, onOpenChange }: QRScannerProps) => {
               scanner.stop().catch(() => {});
               onOpenChange(false);
               if (data.type === 'stock') {
-                navigate(`/stock?highlight=${data.id}`);
+                navigate(`/stock/${data.id}`);
               } else if (data.type === 'product') {
                 navigate(`/products?highlight=${data.id}`);
               }
