@@ -365,9 +365,7 @@ const StockPage = () => {
                     <td className="p-3 text-right font-mono">{item.price.toFixed(2)}€</td>
                     <td className="p-3 text-right">
                       <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
-                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => navigate(`/stock/${item.id}`)}>
-                          <QrCode className="w-3.5 h-3.5" />
-                        </Button>
+                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setQrItem(item)}>
                           <QrCode className="w-3.5 h-3.5" />
                         </Button>
                         <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleEdit(item)}>
