@@ -12,6 +12,7 @@ import AssemblyPage from "./pages/AssemblyPage";
 import AuthPage from "./pages/AuthPage";
 import PendingApprovalPage from "./pages/PendingApprovalPage";
 import AdminUsersPage from "./pages/AdminUsersPage";
+import StockItemDetailPage from "./pages/StockItemDetailPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
