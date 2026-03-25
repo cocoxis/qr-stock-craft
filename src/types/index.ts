@@ -30,6 +30,7 @@ export interface Product {
   name: string;
   sku: string;
   description: string;
+  imageUrl?: string;
   assemblyListId: string;
   quantityProduced: number;
   minQuantity: number;

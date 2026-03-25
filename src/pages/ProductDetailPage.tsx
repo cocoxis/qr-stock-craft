@@ -69,8 +69,13 @@ const ProductDetailPage = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left: QR + dates */}
+          {/* Left: image + QR + dates */}
           <div className="lg:col-span-1 space-y-4">
+            {product.imageUrl ? (
+              <div className="rounded-xl border border-border overflow-hidden">
+                <img src={product.imageUrl} alt={product.name} className="w-full aspect-square object-contain p-4 bg-muted/30" />
+              </div>
+            ) : null}
             <div className="rounded-xl border border-border p-4 flex flex-col items-center gap-2">
               <QRCodeDisplay
                 value={JSON.stringify({ type: 'product', id: product.id, sku: product.sku, name: product.name })}
