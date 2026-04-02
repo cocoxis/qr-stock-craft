@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 /**
  * Like useLocalStorage but scoped to the active workspace via a prefixed key.
@@ -23,9 +23,16 @@ export function useWorkspaceStorage<T>(key: string, initialValue: T) {
     }
   }, [key]);
 
-  useEffect(() => {
-    localStorage.setItem(key, JSON.stringify(value));
-  }, [key, value]);
+  // Persist synchronously so navigate() after setState works
+  const setAndPersist = useCallback((newValue: T | ((prev: T) => T)) => {
+    setValue(prev => {
+      const resolved = typeof newValue === 'function' ? (newValue as (prev: T) => T)(prev) : newValue;
+      try {
+        localStorage.setItem(key, JSON.stringify(resolved));
+      } catch { /* quota exceeded */ }
+      return resolved;
+    });
+  }, [key]);
 
-  return [value, setValue] as const;
+  return [value, setAndPersist] as const;
 }
