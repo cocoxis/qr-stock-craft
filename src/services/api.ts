@@ -20,7 +20,7 @@ function toCamel(str: string): string {
 }
 
 function keysToSnake(obj: object): Record<string, unknown> {
-  const out: Record<string, unknown> = {};
+  const out: Record<string, unknown> {};
   for (const [k, v] of Object.entries(obj)) {
     out[toSnake(k)] = v;
   }
