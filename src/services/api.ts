@@ -63,7 +63,7 @@ export async function getById<T>(table: string, id: string): Promise<T | null> {
   return rows.length ? keysToCamel<T>(rows[0]) : null;
 }
 
-export async function upsert<T extends Record<string, unknown>>(table: string, data: T): Promise<void> {
+export async function upsert<T extends object>(table: string, data: T): Promise<void> {
   await request(`/${table}`, {
     method: 'POST',
     headers: {
