@@ -19,7 +19,7 @@ function toCamel(str: string): string {
   return str.replace(/_([a-z])/g, (_, c) => c.toUpperCase());
 }
 
-function keysToSnake<T extends Record<string, unknown>>(obj: T): Record<string, unknown> {
+function keysToSnake(obj: object): Record<string, unknown> {
   const out: Record<string, unknown> = {};
   for (const [k, v] of Object.entries(obj)) {
     out[toSnake(k)] = v;
