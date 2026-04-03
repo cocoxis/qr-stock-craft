@@ -2,31 +2,33 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Edit2, Trash2, QrCode, Calendar, Clock, ExternalLink, Package } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import QRCodeDisplay from '@/components/QRCodeDisplay';
-import { useWorkspaceContext } from '@/contexts/WorkspaceContext';
-import { useWorkspaceStorage } from '@/hooks/useWorkspaceStorage';
-import { initialStockItems } from '@/data/initialData';
+import { useStockItems, useDeleteStockItem } from '@/hooks/useStockItems';
 import type { StockItem } from '@/types';
 import { Button } from '@/components/ui/button';
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { useState } from 'react';
 
 const StockItemDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { getStorageKey } = useWorkspaceContext();
-  const [items, setItems] = useWorkspaceStorage<StockItem[]>(getStorageKey('stockItems'), initialStockItems);
+  const { data: items = [], isLoading } = useStockItems();
+  const deleteMutation = useDeleteStockItem();
   const [deleteConfirm, setDeleteConfirm] = useState(false);
 
   const item = items.find(i => i.id === id);
+
+  if (isLoading) {
+    return (
+      <AppLayout>
+        <div className="flex items-center justify-center py-20">
+          <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
+        </div>
+      </AppLayout>
+    );
+  }
 
   if (!item) {
     return (
@@ -43,8 +45,7 @@ const StockItemDetailPage = () => {
   }
 
   const handleDelete = () => {
-    setItems(items.filter(i => i.id !== item.id));
-    navigate('/stock');
+    deleteMutation.mutate(item.id, { onSuccess: () => navigate('/stock') });
   };
 
   const stockPercent = item.minQuantity > 0 ? Math.min(100, (item.quantity / item.minQuantity) * 100) : 100;
@@ -53,7 +54,6 @@ const StockItemDetailPage = () => {
   return (
     <AppLayout>
       <div className="animate-fade-in max-w-6xl mx-auto">
-        {/* Header with back button */}
         <div className="flex items-center gap-3 mb-6">
           <Button variant="ghost" size="icon" onClick={() => navigate('/stock')} className="shrink-0">
             <ArrowLeft className="w-5 h-5" />
@@ -72,9 +72,7 @@ const StockItemDetailPage = () => {
           </div>
         </div>
 
-        {/* Main content */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left column: image + QR */}
           <div className="lg:col-span-1 space-y-4">
             {item.imageUrl ? (
               <div className="rounded-xl border border-border bg-muted/30 overflow-hidden">
@@ -86,7 +84,6 @@ const StockItemDetailPage = () => {
               </div>
             )}
 
-            {/* QR Code */}
             <div className="rounded-xl border border-border p-4 flex flex-col items-center gap-2">
               <QRCodeDisplay
                 value={JSON.stringify({ type: 'stock', id: item.id, sku: item.sku, name: item.name })}
@@ -97,7 +94,6 @@ const StockItemDetailPage = () => {
               />
             </div>
 
-            {/* Dates */}
             <div className="rounded-xl border border-border p-4 space-y-2 text-sm text-muted-foreground">
               <div className="flex items-center gap-2">
                 <Calendar className="w-4 h-4" />
@@ -112,9 +108,7 @@ const StockItemDetailPage = () => {
             </div>
           </div>
 
-          {/* Right column: details */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Description */}
             {item.description && (
               <div className="rounded-xl border border-border p-4">
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Description</p>
@@ -122,7 +116,6 @@ const StockItemDetailPage = () => {
               </div>
             )}
 
-            {/* Key metrics */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <div className="rounded-xl border border-border p-4">
                 <p className="text-xs text-muted-foreground mb-1">Quantité</p>
@@ -130,7 +123,6 @@ const StockItemDetailPage = () => {
                   {item.quantity}
                 </p>
                 <p className="text-xs text-muted-foreground">{item.unit} (min: {item.minQuantity})</p>
-                {/* Stock bar */}
                 <div className="mt-2 h-1.5 rounded-full bg-muted overflow-hidden">
                   <div
                     className={`h-full rounded-full transition-all ${isCritical ? 'bg-destructive' : 'bg-primary'}`}
@@ -154,7 +146,6 @@ const StockItemDetailPage = () => {
               </div>
             </div>
 
-            {/* Category + Supplier */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="rounded-xl border border-border p-4">
                 <p className="text-xs text-muted-foreground mb-1">Catégorie</p>
@@ -176,44 +167,24 @@ const StockItemDetailPage = () => {
               </div>
             </div>
 
-            {/* Component-specific fields */}
             {item.category?.toLowerCase() === 'composants' && (item.componentValue || item.componentVoltage || item.componentFootprint) && (
               <div className="rounded-xl border border-border p-4">
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Détails composant</p>
                 <div className="grid grid-cols-3 gap-3">
-                  <div>
-                    <p className="text-xs text-muted-foreground mb-1">Valeur</p>
-                    <p className="text-sm font-medium">{item.componentValue || '—'}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground mb-1">Tension</p>
-                    <p className="text-sm font-medium">{item.componentVoltage || '—'}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground mb-1">FootPrint</p>
-                    <p className="text-sm font-medium">{item.componentFootprint || '—'}</p>
-                  </div>
+                  <div><p className="text-xs text-muted-foreground mb-1">Valeur</p><p className="text-sm font-medium">{item.componentValue || '—'}</p></div>
+                  <div><p className="text-xs text-muted-foreground mb-1">Tension</p><p className="text-sm font-medium">{item.componentVoltage || '—'}</p></div>
+                  <div><p className="text-xs text-muted-foreground mb-1">FootPrint</p><p className="text-sm font-medium">{item.componentFootprint || '—'}</p></div>
                 </div>
               </div>
             )}
 
-            {/* Screw-specific fields */}
             {item.category?.toLowerCase() === 'visserie' && (item.screwType || item.screwLength || item.screwShape) && (
               <div className="rounded-xl border border-border p-4">
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Détails visserie</p>
                 <div className="grid grid-cols-3 gap-3">
-                  <div>
-                    <p className="text-xs text-muted-foreground mb-1">Type</p>
-                    <p className="text-sm font-medium">{item.screwType || '—'}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground mb-1">Longueur</p>
-                    <p className="text-sm font-medium">{item.screwLength || '—'}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground mb-1">Forme</p>
-                    <p className="text-sm font-medium">{item.screwShape || '—'}</p>
-                  </div>
+                  <div><p className="text-xs text-muted-foreground mb-1">Type</p><p className="text-sm font-medium">{item.screwType || '—'}</p></div>
+                  <div><p className="text-xs text-muted-foreground mb-1">Longueur</p><p className="text-sm font-medium">{item.screwLength || '—'}</p></div>
+                  <div><p className="text-xs text-muted-foreground mb-1">Forme</p><p className="text-sm font-medium">{item.screwShape || '—'}</p></div>
                 </div>
               </div>
             )}
@@ -221,7 +192,6 @@ const StockItemDetailPage = () => {
         </div>
       </div>
 
-      {/* Delete confirmation */}
       <AlertDialog open={deleteConfirm} onOpenChange={setDeleteConfirm}>
         <AlertDialogContent>
           <AlertDialogHeader>

@@ -3,13 +3,11 @@ import { Plus, Search, QrCode, Trash2, Edit2, Camera, Package } from 'lucide-rea
 import AppLayout from '@/components/AppLayout';
 import QRCodeDisplay from '@/components/QRCodeDisplay';
 import QRScanner from '@/components/QRScanner';
-import { useWorkspaceContext } from '@/contexts/WorkspaceContext';
-import { useWorkspaceStorage } from '@/hooks/useWorkspaceStorage';
-import { initialProducts, initialAssemblyLists } from '@/data/initialData';
-import type { Product, AssemblyList } from '@/types';
+import { useProducts, useDeleteProduct } from '@/hooks/useProducts';
+import { useAssemblyLists } from '@/hooks/useAssemblyLists';
+import type { Product } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
 } from '@/components/ui/dialog';
@@ -20,9 +18,9 @@ import {
 import { useNavigate } from 'react-router-dom';
 
 const ProductsPage = () => {
-  const { getStorageKey } = useWorkspaceContext();
-  const [products, setProducts] = useWorkspaceStorage<Product[]>(getStorageKey('products'), initialProducts);
-  const [assemblyLists] = useWorkspaceStorage<AssemblyList[]>(getStorageKey('assemblyLists'), initialAssemblyLists);
+  const { data: products = [], isLoading } = useProducts();
+  const { data: assemblyLists = [] } = useAssemblyLists();
+  const deleteMutation = useDeleteProduct();
   const [search, setSearch] = useState('');
   const [qrProduct, setQrProduct] = useState<Product | null>(null);
   const [scannerOpen, setScannerOpen] = useState(false);
@@ -40,10 +38,20 @@ const ProductsPage = () => {
 
   const handleDeleteConfirmed = () => {
     if (deleteConfirm) {
-      setProducts(products.filter(p => p.id !== deleteConfirm.id));
+      deleteMutation.mutate(deleteConfirm.id);
       setDeleteConfirm(null);
     }
   };
+
+  if (isLoading) {
+    return (
+      <AppLayout>
+        <div className="flex items-center justify-center py-20">
+          <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
+        </div>
+      </AppLayout>
+    );
+  }
 
   return (
     <AppLayout>
@@ -63,13 +71,11 @@ const ProductsPage = () => {
           </div>
         </div>
 
-        {/* Search */}
         <div className="relative mb-4">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input placeholder="Rechercher par nom, SKU, description..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10" />
         </div>
 
-        {/* Table */}
         <div className="glass-card rounded-xl overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -139,7 +145,6 @@ const ProductsPage = () => {
           </div>
         </div>
 
-        {/* QR Code dialog */}
         <Dialog open={!!qrProduct} onOpenChange={() => setQrProduct(null)}>
           <DialogContent className="max-w-xs text-center">
             <DialogHeader>
@@ -159,7 +164,6 @@ const ProductsPage = () => {
           </DialogContent>
         </Dialog>
 
-        {/* Delete confirmation */}
         <AlertDialog open={!!deleteConfirm} onOpenChange={() => setDeleteConfirm(null)}>
           <AlertDialogContent>
             <AlertDialogHeader>

@@ -2,9 +2,7 @@ import { useState, useRef, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, ImageIcon, Trash2, Save } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
-import { useWorkspaceContext } from '@/contexts/WorkspaceContext';
-import { useWorkspaceStorage } from '@/hooks/useWorkspaceStorage';
-import { initialStockItems } from '@/data/initialData';
+import { useStockItems, useUpsertStockItem } from '@/hooks/useStockItems';
 import type { StockItem } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,8 +12,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 const StockItemEditPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { getStorageKey } = useWorkspaceContext();
-  const [items, setItems] = useWorkspaceStorage<StockItem[]>(getStorageKey('stockItems'), initialStockItems);
+  const { data: items = [] } = useStockItems();
+  const upsertMutation = useUpsertStockItem();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const isNew = !id || id === 'new';
@@ -77,16 +75,17 @@ const StockItemEditPage = () => {
 
   const handleSave = () => {
     if (!form.name || !form.sku) return;
-    const now = new Date().toISOString().split('T')[0];
-    if (existingItem) {
-      setItems(items.map(i => i.id === existingItem.id ? { ...i, ...form, updatedAt: now } : i));
-      navigate(`/stock/${existingItem.id}`);
-    } else {
-      const newId = `stk-${Date.now()}`;
-      const newItem: StockItem = { ...form, id: newId, createdAt: now, updatedAt: now };
-      setItems([...items, newItem]);
-      navigate(`/stock/${newId}`);
-    }
+    const now = new Date().toISOString();
+    const itemId = existingItem ? existingItem.id : `stk-${Date.now()}`;
+    const item: StockItem = {
+      ...form,
+      id: itemId,
+      createdAt: existingItem?.createdAt || now,
+      updatedAt: now,
+    };
+    upsertMutation.mutate(item, {
+      onSuccess: () => navigate(`/stock/${itemId}`),
+    });
   };
 
   if (!isNew && !existingItem) {
@@ -105,7 +104,6 @@ const StockItemEditPage = () => {
   return (
     <AppLayout>
       <div className="animate-fade-in max-w-5xl mx-auto">
-        {/* Header */}
         <div className="flex items-center gap-3 mb-6">
           <Button variant="ghost" size="icon" onClick={() => navigate(existingItem ? `/stock/${existingItem.id}` : '/stock')} className="shrink-0">
             <ArrowLeft className="w-5 h-5" />
@@ -115,14 +113,12 @@ const StockItemEditPage = () => {
               {isNew ? 'Nouvel article' : `Modifier — ${existingItem?.name}`}
             </h1>
           </div>
-          <Button onClick={handleSave} disabled={!form.name || !form.sku}>
+          <Button onClick={handleSave} disabled={!form.name || !form.sku || upsertMutation.isPending}>
             <Save className="w-4 h-4 mr-2" /> {isNew ? 'Créer' : 'Enregistrer'}
           </Button>
         </div>
 
-        {/* Form */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left: image */}
           <div className="lg:col-span-1 space-y-4">
             <div className="rounded-xl border border-border overflow-hidden">
               {form.imageUrl ? (
@@ -145,7 +141,6 @@ const StockItemEditPage = () => {
             </Button>
           </div>
 
-          {/* Right: fields */}
           <div className="lg:col-span-2 space-y-4">
             <div className="rounded-xl border border-border p-5 space-y-4">
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Informations générales</p>

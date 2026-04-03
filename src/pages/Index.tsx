@@ -1,33 +1,33 @@
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Package, Box, AlertTriangle, ClipboardList, TrendingUp, Euro, MapPin, ExternalLink } from 'lucide-react';
+import { Package, Box, AlertTriangle, TrendingUp, Euro, MapPin, ExternalLink } from 'lucide-react';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import AppLayout from '@/components/AppLayout';
-import { useWorkspaceContext } from '@/contexts/WorkspaceContext';
-import { useWorkspaceStorage } from '@/hooks/useWorkspaceStorage';
-import { initialStockItems, initialProducts, initialAssemblyLists } from '@/data/initialData';
-import type { StockItem, Product, AssemblyList } from '@/types';
+import { useStockItems } from '@/hooks/useStockItems';
+import { useProducts } from '@/hooks/useProducts';
+import { useAssemblyLists } from '@/hooks/useAssemblyLists';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 
 const CHART_COLORS = [
-  'hsl(35, 92%, 50%)',   // primary
-  'hsl(200, 80%, 45%)',  // accent
-  'hsl(152, 60%, 42%)',  // success
-  'hsl(0, 72%, 51%)',    // destructive
-  'hsl(270, 60%, 55%)',  // purple
-  'hsl(45, 93%, 47%)',   // warning
-  'hsl(180, 50%, 45%)',  // teal
-  'hsl(330, 60%, 50%)',  // pink
+  'hsl(35, 92%, 50%)',
+  'hsl(200, 80%, 45%)',
+  'hsl(152, 60%, 42%)',
+  'hsl(0, 72%, 51%)',
+  'hsl(270, 60%, 55%)',
+  'hsl(45, 93%, 47%)',
+  'hsl(180, 50%, 45%)',
+  'hsl(330, 60%, 50%)',
 ];
 
 const Index = () => {
   const navigate = useNavigate();
-  const { getStorageKey } = useWorkspaceContext();
-  const [stockItems] = useWorkspaceStorage<StockItem[]>(getStorageKey('stockItems'), initialStockItems);
-  const [products] = useWorkspaceStorage<Product[]>(getStorageKey('products'), initialProducts);
-  const [assemblyLists] = useWorkspaceStorage<AssemblyList[]>(getStorageKey('assemblyLists'), initialAssemblyLists);
+  const { data: stockItems = [], isLoading: loadingStock } = useStockItems();
+  const { data: products = [], isLoading: loadingProducts } = useProducts();
+  const { data: assemblyLists = [] } = useAssemblyLists();
+
+  const isLoading = loadingStock || loadingProducts;
 
   const lowStockItems = stockItems.filter(item => item.quantity <= item.minQuantity);
   const lowStockProducts = products.filter(p => p.quantityProduced <= p.minQuantity);
@@ -35,7 +35,6 @@ const Index = () => {
   const totalUnits = stockItems.reduce((s, i) => s + i.quantity, 0);
   const totalProduced = products.reduce((s, p) => s + p.quantityProduced, 0);
 
-  // Category breakdown for pie chart
   const categoryData = useMemo(() => {
     const map = new Map<string, { count: number; value: number }>();
     stockItems.forEach(item => {
@@ -46,7 +45,6 @@ const Index = () => {
     return Array.from(map.entries()).map(([name, data]) => ({ name, ...data })).sort((a, b) => b.value - a.value);
   }, [stockItems]);
 
-  // Top 8 items by value for bar chart
   const topValueItems = useMemo(() => {
     return [...stockItems]
       .map(i => ({ name: i.name.length > 15 ? i.name.slice(0, 15) + '…' : i.name, value: i.quantity * i.price }))
@@ -91,6 +89,16 @@ const Index = () => {
     },
   ];
 
+  if (isLoading) {
+    return (
+      <AppLayout>
+        <div className="flex items-center justify-center py-20">
+          <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
+        </div>
+      </AppLayout>
+    );
+  }
+
   return (
     <AppLayout>
       <div className="animate-fade-in space-y-6">
@@ -99,7 +107,6 @@ const Index = () => {
           <p className="text-muted-foreground text-sm mt-1">Vue d'ensemble de votre inventaire</p>
         </div>
 
-        {/* Stats cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {stats.map((stat) => (
             <Card key={stat.label} className="relative overflow-hidden">
@@ -123,9 +130,7 @@ const Index = () => {
           ))}
         </div>
 
-        {/* Charts row */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Pie: répartition par catégorie */}
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-semibold">Répartition par catégorie</CardTitle>
@@ -159,7 +164,6 @@ const Index = () => {
             </CardContent>
           </Card>
 
-          {/* Bar: top articles par valeur */}
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-semibold flex items-center gap-2">
@@ -185,7 +189,6 @@ const Index = () => {
           </Card>
         </div>
 
-        {/* Critical stock section */}
         <Card className={lowStockItems.length + lowStockProducts.length > 0 ? 'border-warning/40' : ''}>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-semibold flex items-center gap-2">
