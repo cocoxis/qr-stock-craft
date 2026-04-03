@@ -1,10 +1,9 @@
 import { useState } from 'react';
 import { Plus, Search, Trash2, Edit2, Printer, Layers } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
-import { useWorkspaceContext } from '@/contexts/WorkspaceContext';
-import { useWorkspaceStorage } from '@/hooks/useWorkspaceStorage';
-import { initialAssemblyLists, initialStockItems } from '@/data/initialData';
-import type { AssemblyList, StockItem } from '@/types';
+import { useAssemblyLists, useDeleteAssemblyList } from '@/hooks/useAssemblyLists';
+import { useStockItems } from '@/hooks/useStockItems';
+import type { AssemblyList } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -14,9 +13,9 @@ import {
 import { useNavigate } from 'react-router-dom';
 
 const AssemblyPage = () => {
-  const { getStorageKey } = useWorkspaceContext();
-  const [lists, setLists] = useWorkspaceStorage<AssemblyList[]>(getStorageKey('assemblyLists'), initialAssemblyLists);
-  const [stockItems] = useWorkspaceStorage<StockItem[]>(getStorageKey('stockItems'), initialStockItems);
+  const { data: lists = [], isLoading } = useAssemblyLists();
+  const { data: stockItems = [] } = useStockItems();
+  const deleteMutation = useDeleteAssemblyList();
   const [search, setSearch] = useState('');
   const [deleteConfirm, setDeleteConfirm] = useState<AssemblyList | null>(null);
   const navigate = useNavigate();
@@ -31,7 +30,7 @@ const AssemblyPage = () => {
 
   const handleDeleteConfirmed = () => {
     if (deleteConfirm) {
-      setLists(lists.filter(l => l.id !== deleteConfirm.id));
+      deleteMutation.mutate(deleteConfirm.id);
       setDeleteConfirm(null);
     }
   };
@@ -66,6 +65,16 @@ const AssemblyPage = () => {
     printWindow.print();
   };
 
+  if (isLoading) {
+    return (
+      <AppLayout>
+        <div className="flex items-center justify-center py-20">
+          <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
+        </div>
+      </AppLayout>
+    );
+  }
+
   return (
     <AppLayout>
       <div className="animate-fade-in">
@@ -79,13 +88,11 @@ const AssemblyPage = () => {
           </Button>
         </div>
 
-        {/* Search */}
         <div className="relative mb-4">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input placeholder="Rechercher par nom, produit..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10" />
         </div>
 
-        {/* Table */}
         <div className="glass-card rounded-xl overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -162,7 +169,6 @@ const AssemblyPage = () => {
           </div>
         </div>
 
-        {/* Delete confirmation */}
         <AlertDialog open={!!deleteConfirm} onOpenChange={() => setDeleteConfirm(null)}>
           <AlertDialogContent>
             <AlertDialogHeader>

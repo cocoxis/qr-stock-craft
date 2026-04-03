@@ -2,10 +2,9 @@ import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Save, Plus, Trash2 } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
-import { useWorkspaceContext } from '@/contexts/WorkspaceContext';
-import { useWorkspaceStorage } from '@/hooks/useWorkspaceStorage';
-import { initialAssemblyLists, initialStockItems } from '@/data/initialData';
-import type { AssemblyList, AssemblyItem, StockItem } from '@/types';
+import { useAssemblyLists, useUpsertAssemblyList } from '@/hooks/useAssemblyLists';
+import { useStockItems } from '@/hooks/useStockItems';
+import type { AssemblyItem } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -14,9 +13,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 const AssemblyEditPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { getStorageKey } = useWorkspaceContext();
-  const [lists, setLists] = useWorkspaceStorage<AssemblyList[]>(getStorageKey('assemblyLists'), initialAssemblyLists);
-  const [stockItems] = useWorkspaceStorage<StockItem[]>(getStorageKey('stockItems'), initialStockItems);
+  const { data: lists = [] } = useAssemblyLists();
+  const { data: stockItems = [] } = useStockItems();
+  const upsertMutation = useUpsertAssemblyList();
 
   const isNew = !id || id === 'new';
   const existingList = isNew ? null : lists.find(l => l.id === id);
@@ -38,15 +37,18 @@ const AssemblyEditPage = () => {
 
   const handleSave = () => {
     if (!name || !productName) return;
-    const data = { name, productName, description, items: assemblyItems };
-    if (existingList) {
-      setLists(lists.map(l => l.id === existingList.id ? { ...l, ...data } : l));
-      navigate(`/assembly/${existingList.id}`);
-    } else {
-      const newId = `asm-${Date.now()}`;
-      setLists([...lists, { ...data, id: newId, createdAt: new Date().toISOString().split('T')[0] }]);
-      navigate(`/assembly/${newId}`);
-    }
+    const listId = existingList ? existingList.id : `asm-${Date.now()}`;
+    upsertMutation.mutate(
+      {
+        id: listId,
+        name,
+        productName,
+        description,
+        items: assemblyItems,
+        createdAt: existingList?.createdAt || new Date().toISOString(),
+      },
+      { onSuccess: () => navigate(`/assembly/${listId}`) }
+    );
   };
 
   if (!isNew && !existingList) {
@@ -74,7 +76,7 @@ const AssemblyEditPage = () => {
               {isNew ? "Nouvelle liste d'assemblage" : `Modifier — ${existingList?.name}`}
             </h1>
           </div>
-          <Button onClick={handleSave} disabled={!name || !productName}>
+          <Button onClick={handleSave} disabled={!name || !productName || upsertMutation.isPending}>
             <Save className="w-4 h-4 mr-2" /> {isNew ? 'Créer' : 'Enregistrer'}
           </Button>
         </div>

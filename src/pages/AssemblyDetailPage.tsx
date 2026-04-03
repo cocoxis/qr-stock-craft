@@ -1,10 +1,8 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Edit2, Trash2, Layers, Calendar } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
-import { useWorkspaceContext } from '@/contexts/WorkspaceContext';
-import { useWorkspaceStorage } from '@/hooks/useWorkspaceStorage';
-import { initialAssemblyLists, initialStockItems } from '@/data/initialData';
-import type { AssemblyList, StockItem } from '@/types';
+import { useAssemblyLists, useDeleteAssemblyList } from '@/hooks/useAssemblyLists';
+import { useStockItems } from '@/hooks/useStockItems';
 import { Button } from '@/components/ui/button';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -15,12 +13,22 @@ import { useState } from 'react';
 const AssemblyDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { getStorageKey } = useWorkspaceContext();
-  const [lists, setLists] = useWorkspaceStorage<AssemblyList[]>(getStorageKey('assemblyLists'), initialAssemblyLists);
-  const [stockItems] = useWorkspaceStorage<StockItem[]>(getStorageKey('stockItems'), initialStockItems);
+  const { data: lists = [], isLoading } = useAssemblyLists();
+  const { data: stockItems = [] } = useStockItems();
+  const deleteMutation = useDeleteAssemblyList();
   const [deleteConfirm, setDeleteConfirm] = useState(false);
 
   const list = lists.find(l => l.id === id);
+
+  if (isLoading) {
+    return (
+      <AppLayout>
+        <div className="flex items-center justify-center py-20">
+          <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
+        </div>
+      </AppLayout>
+    );
+  }
 
   if (!list) {
     return (
@@ -37,8 +45,7 @@ const AssemblyDetailPage = () => {
   }
 
   const handleDelete = () => {
-    setLists(lists.filter(l => l.id !== list.id));
-    navigate('/assembly');
+    deleteMutation.mutate(list.id, { onSuccess: () => navigate('/assembly') });
   };
 
   const getStockItem = (stockId: string) => stockItems.find(s => s.id === stockId);
@@ -50,7 +57,6 @@ const AssemblyDetailPage = () => {
   return (
     <AppLayout>
       <div className="animate-fade-in max-w-5xl mx-auto">
-        {/* Header */}
         <div className="flex items-center gap-3 mb-6">
           <Button variant="ghost" size="icon" onClick={() => navigate('/assembly')} className="shrink-0">
             <ArrowLeft className="w-5 h-5" />
@@ -70,7 +76,6 @@ const AssemblyDetailPage = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left: info */}
           <div className="lg:col-span-1 space-y-4">
             <div className="rounded-xl border border-border p-4 space-y-3">
               <div>
@@ -92,7 +97,6 @@ const AssemblyDetailPage = () => {
             </div>
           </div>
 
-          {/* Right: BOM table */}
           <div className="lg:col-span-2 space-y-4">
             {list.description && (
               <div className="rounded-xl border border-border p-4">

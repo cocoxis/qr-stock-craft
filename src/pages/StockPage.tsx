@@ -4,9 +4,7 @@ import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/h
 import AppLayout from '@/components/AppLayout';
 import QRCodeDisplay from '@/components/QRCodeDisplay';
 import QRScanner from '@/components/QRScanner';
-import { useWorkspaceContext } from '@/contexts/WorkspaceContext';
-import { useWorkspaceStorage } from '@/hooks/useWorkspaceStorage';
-import { initialStockItems } from '@/data/initialData';
+import { useStockItems, useDeleteStockItem } from '@/hooks/useStockItems';
 import type { StockItem } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -21,8 +19,8 @@ import {
 import { useSearchParams, useNavigate } from 'react-router-dom';
 
 const StockPage = () => {
-  const { getStorageKey } = useWorkspaceContext();
-  const [items, setItems] = useWorkspaceStorage<StockItem[]>(getStorageKey('stockItems'), initialStockItems);
+  const { data: items = [], isLoading } = useStockItems();
+  const deleteMutation = useDeleteStockItem();
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [qrItem, setQrItem] = useState<StockItem | null>(null);
@@ -56,7 +54,7 @@ const StockPage = () => {
 
   const handleDeleteConfirmed = () => {
     if (deleteConfirm) {
-      setItems(items.filter((i) => i.id !== deleteConfirm.id));
+      deleteMutation.mutate(deleteConfirm.id);
       setDeleteConfirm(null);
     }
   };
@@ -92,6 +90,16 @@ const StockPage = () => {
     printWindow.print();
   };
 
+  if (isLoading) {
+    return (
+      <AppLayout>
+        <div className="flex items-center justify-center py-20">
+          <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
+        </div>
+      </AppLayout>
+    );
+  }
+
   return (
     <AppLayout>
       <div className="animate-fade-in">
@@ -113,7 +121,6 @@ const StockPage = () => {
           </div>
         </div>
 
-        {/* Search + Category filter */}
         <div className="flex gap-3 mb-4">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -206,7 +213,6 @@ const StockPage = () => {
           </div>
         </div>
 
-        {/* QR Code dialog */}
         <Dialog open={!!qrItem} onOpenChange={() => setQrItem(null)}>
           <DialogContent className="max-w-xs text-center">
             <DialogHeader>
@@ -227,7 +233,6 @@ const StockPage = () => {
           </DialogContent>
         </Dialog>
 
-        {/* Delete confirmation */}
         <AlertDialog open={!!deleteConfirm} onOpenChange={() => setDeleteConfirm(null)}>
           <AlertDialogContent>
             <AlertDialogHeader>

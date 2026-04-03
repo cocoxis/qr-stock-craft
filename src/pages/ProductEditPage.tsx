@@ -2,10 +2,9 @@ import { useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Save, ImageIcon, Trash2 } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
-import { useWorkspaceContext } from '@/contexts/WorkspaceContext';
-import { useWorkspaceStorage } from '@/hooks/useWorkspaceStorage';
-import { initialProducts, initialAssemblyLists } from '@/data/initialData';
-import type { Product, AssemblyList } from '@/types';
+import { useProducts, useUpsertProduct } from '@/hooks/useProducts';
+import { useAssemblyLists } from '@/hooks/useAssemblyLists';
+import type { Product } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -14,9 +13,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 const ProductEditPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { getStorageKey } = useWorkspaceContext();
-  const [products, setProducts] = useWorkspaceStorage<Product[]>(getStorageKey('products'), initialProducts);
-  const [assemblyLists] = useWorkspaceStorage<AssemblyList[]>(getStorageKey('assemblyLists'), initialAssemblyLists);
+  const { data: products = [] } = useProducts();
+  const { data: assemblyLists = [] } = useAssemblyLists();
+  const upsertMutation = useUpsertProduct();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const isNew = !id || id === 'new';
@@ -46,14 +45,15 @@ const ProductEditPage = () => {
 
   const handleSave = () => {
     if (!form.name || !form.sku) return;
-    if (existingProduct) {
-      setProducts(products.map(p => p.id === existingProduct.id ? { ...p, ...form } : p));
-      navigate(`/products/${existingProduct.id}`);
-    } else {
-      const newId = `prd-${Date.now()}`;
-      setProducts([...products, { ...form, id: newId, createdAt: new Date().toISOString().split('T')[0] }]);
-      navigate(`/products/${newId}`);
-    }
+    const productId = existingProduct ? existingProduct.id : `prd-${Date.now()}`;
+    const product: Product = {
+      ...form,
+      id: productId,
+      createdAt: existingProduct?.createdAt || new Date().toISOString(),
+    };
+    upsertMutation.mutate(product, {
+      onSuccess: () => navigate(`/products/${productId}`),
+    });
   };
 
   if (!isNew && !existingProduct) {
@@ -81,13 +81,12 @@ const ProductEditPage = () => {
               {isNew ? 'Nouveau produit' : `Modifier — ${existingProduct?.name}`}
             </h1>
           </div>
-          <Button onClick={handleSave} disabled={!form.name || !form.sku}>
+          <Button onClick={handleSave} disabled={!form.name || !form.sku || upsertMutation.isPending}>
             <Save className="w-4 h-4 mr-2" /> {isNew ? 'Créer' : 'Enregistrer'}
           </Button>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left: image */}
           <div className="lg:col-span-1 space-y-4">
             <div className="rounded-xl border border-border overflow-hidden">
               {form.imageUrl ? (
@@ -110,7 +109,6 @@ const ProductEditPage = () => {
             </Button>
           </div>
 
-          {/* Right: fields */}
           <div className="lg:col-span-2 space-y-4">
             <div className="rounded-xl border border-border p-5 space-y-4">
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Informations générales</p>

@@ -2,10 +2,10 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Edit2, Trash2, Package, Calendar, Layers } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import QRCodeDisplay from '@/components/QRCodeDisplay';
-import { useWorkspaceContext } from '@/contexts/WorkspaceContext';
-import { useWorkspaceStorage } from '@/hooks/useWorkspaceStorage';
-import { initialProducts, initialAssemblyLists, initialStockItems } from '@/data/initialData';
-import type { Product, AssemblyList, StockItem } from '@/types';
+import { useProducts, useDeleteProduct } from '@/hooks/useProducts';
+import { useAssemblyLists } from '@/hooks/useAssemblyLists';
+import { useStockItems } from '@/hooks/useStockItems';
+import type { Product } from '@/types';
 import { Button } from '@/components/ui/button';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -16,14 +16,24 @@ import { useState } from 'react';
 const ProductDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { getStorageKey } = useWorkspaceContext();
-  const [products, setProducts] = useWorkspaceStorage<Product[]>(getStorageKey('products'), initialProducts);
-  const [assemblyLists] = useWorkspaceStorage<AssemblyList[]>(getStorageKey('assemblyLists'), initialAssemblyLists);
-  const [stockItems] = useWorkspaceStorage<StockItem[]>(getStorageKey('stockItems'), initialStockItems);
+  const { data: products = [], isLoading } = useProducts();
+  const { data: assemblyLists = [] } = useAssemblyLists();
+  const { data: stockItems = [] } = useStockItems();
+  const deleteMutation = useDeleteProduct();
   const [deleteConfirm, setDeleteConfirm] = useState(false);
 
   const product = products.find(p => p.id === id);
   const assembly = product ? assemblyLists.find(a => a.id === product.assemblyListId) : null;
+
+  if (isLoading) {
+    return (
+      <AppLayout>
+        <div className="flex items-center justify-center py-20">
+          <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
+        </div>
+      </AppLayout>
+    );
+  }
 
   if (!product) {
     return (
@@ -40,8 +50,7 @@ const ProductDetailPage = () => {
   }
 
   const handleDelete = () => {
-    setProducts(products.filter(p => p.id !== product.id));
-    navigate('/products');
+    deleteMutation.mutate(product.id, { onSuccess: () => navigate('/products') });
   };
 
   const isCritical = product.minQuantity > 0 && product.quantityProduced <= product.minQuantity;
@@ -49,7 +58,6 @@ const ProductDetailPage = () => {
   return (
     <AppLayout>
       <div className="animate-fade-in max-w-5xl mx-auto">
-        {/* Header */}
         <div className="flex items-center gap-3 mb-6">
           <Button variant="ghost" size="icon" onClick={() => navigate('/products')} className="shrink-0">
             <ArrowLeft className="w-5 h-5" />
@@ -69,7 +77,6 @@ const ProductDetailPage = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left: image + QR + dates */}
           <div className="lg:col-span-1 space-y-4">
             {product.imageUrl ? (
               <div className="rounded-xl border border-border overflow-hidden">
@@ -93,7 +100,6 @@ const ProductDetailPage = () => {
             </div>
           </div>
 
-          {/* Right: details */}
           <div className="lg:col-span-2 space-y-6">
             {product.description && (
               <div className="rounded-xl border border-border p-4">
@@ -102,7 +108,6 @@ const ProductDetailPage = () => {
               </div>
             )}
 
-            {/* Key metrics */}
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               <div className="rounded-xl border border-border p-4">
                 <p className="text-xs text-muted-foreground mb-1">Quantité produite</p>
@@ -128,7 +133,6 @@ const ProductDetailPage = () => {
               )}
             </div>
 
-            {/* Assembly BOM */}
             {assembly && assembly.items.length > 0 && (
               <div className="rounded-xl border border-border overflow-hidden">
                 <div className="p-4 border-b border-border/50">
@@ -170,7 +174,6 @@ const ProductDetailPage = () => {
         </div>
       </div>
 
-      {/* Delete confirmation */}
       <AlertDialog open={deleteConfirm} onOpenChange={setDeleteConfirm}>
         <AlertDialogContent>
           <AlertDialogHeader>

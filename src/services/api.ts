@@ -19,7 +19,7 @@ function toCamel(str: string): string {
   return str.replace(/_([a-z])/g, (_, c) => c.toUpperCase());
 }
 
-function keysToSnake<T extends Record<string, unknown>>(obj: T): Record<string, unknown> {
+function keysToSnake(obj: object): Record<string, unknown> {
   const out: Record<string, unknown> = {};
   for (const [k, v] of Object.entries(obj)) {
     out[toSnake(k)] = v;
@@ -63,7 +63,7 @@ export async function getById<T>(table: string, id: string): Promise<T | null> {
   return rows.length ? keysToCamel<T>(rows[0]) : null;
 }
 
-export async function upsert<T extends Record<string, unknown>>(table: string, data: T): Promise<void> {
+export async function upsert<T extends object>(table: string, data: T): Promise<void> {
   await request(`/${table}`, {
     method: 'POST',
     headers: {
