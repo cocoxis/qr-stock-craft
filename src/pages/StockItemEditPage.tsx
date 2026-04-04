@@ -86,7 +86,13 @@ const StockItemEditPage = () => {
       updatedAt: now,
     };
     upsertMutation.mutate(item, {
-      onSuccess: () => navigate(`/stock/${itemId}`),
+      onSuccess: () => {
+        toast({ title: 'Article enregistré' });
+        navigate(`/stock/${itemId}`);
+      },
+      onError: (err) => {
+        toast({ title: 'Erreur', description: String(err.message || err), variant: 'destructive' });
+      },
     });
   };
 
