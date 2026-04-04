@@ -1,5 +1,6 @@
 import { useState, useRef, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, ImageIcon, Trash2, Save } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import { useStockItems, useUpsertStockItem } from '@/hooks/useStockItems';
@@ -12,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 const StockItemEditPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const { data: items = [] } = useStockItems();
   const upsertMutation = useUpsertStockItem();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -84,7 +86,13 @@ const StockItemEditPage = () => {
       updatedAt: now,
     };
     upsertMutation.mutate(item, {
-      onSuccess: () => navigate(`/stock/${itemId}`),
+      onSuccess: () => {
+        toast({ title: 'Article enregistré' });
+        navigate(`/stock/${itemId}`);
+      },
+      onError: (err) => {
+        toast({ title: 'Erreur', description: String(err.message || err), variant: 'destructive' });
+      },
     });
   };
 
