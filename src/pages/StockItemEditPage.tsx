@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 const StockItemEditPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const { data: items = [] } = useStockItems();
   const upsertMutation = useUpsertStockItem();
   const fileInputRef = useRef<HTMLInputElement>(null);
