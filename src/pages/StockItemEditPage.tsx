@@ -1,5 +1,6 @@
 import { useState, useRef, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, ImageIcon, Trash2, Save } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import { useStockItems, useUpsertStockItem } from '@/hooks/useStockItems';
