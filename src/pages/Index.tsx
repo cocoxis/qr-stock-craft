@@ -270,6 +270,49 @@ const Index = () => {
             )}
           </CardContent>
         </Card>
+        {/* Shopping lists */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-semibold flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <ShoppingCart className="w-4 h-4 text-primary" />
+                Listes de courses en cours
+                {activeShoppingLists.length > 0 && (
+                  <Badge variant="secondary" className="text-xs">{activeShoppingLists.length}</Badge>
+                )}
+              </div>
+              <Button size="sm" variant="outline" onClick={() => navigate('/shopping')}>
+                Voir tout
+              </Button>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {activeShoppingLists.length === 0 ? (
+              <p className="text-sm text-muted-foreground py-4 text-center">Aucune liste de courses en cours</p>
+            ) : (
+              <div className="space-y-2">
+                {activeShoppingLists.slice(0, 5).map(list => (
+                  <div
+                    key={list.id}
+                    onClick={() => navigate('/shopping')}
+                    className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/60 cursor-pointer transition-colors group"
+                  >
+                    <div className="p-2 rounded-lg bg-primary/10">
+                      <ShoppingCart className="w-4 h-4 text-primary" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate group-hover:text-primary transition-colors">{list.name}</p>
+                      <p className="text-xs text-muted-foreground">
+                        Créée le {new Date(list.created_at).toLocaleDateString('fr-FR')}
+                      </p>
+                    </div>
+                    <ExternalLink className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </AppLayout>
   );
