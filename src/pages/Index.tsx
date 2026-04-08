@@ -1,14 +1,16 @@
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Package, Box, AlertTriangle, TrendingUp, Euro, MapPin, ExternalLink } from 'lucide-react';
+import { Package, Box, AlertTriangle, TrendingUp, Euro, MapPin, ExternalLink, ShoppingCart, CheckCircle2 } from 'lucide-react';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import AppLayout from '@/components/AppLayout';
 import { useStockItems } from '@/hooks/useStockItems';
 import { useProducts } from '@/hooks/useProducts';
 import { useAssemblyLists } from '@/hooks/useAssemblyLists';
+import { useShoppingLists } from '@/hooks/useShoppingLists';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { Button } from '@/components/ui/button';
 
 const CHART_COLORS = [
   'hsl(35, 92%, 50%)',
@@ -26,6 +28,7 @@ const Index = () => {
   const { data: stockItems = [], isLoading: loadingStock } = useStockItems();
   const { data: products = [], isLoading: loadingProducts } = useProducts();
   const { data: assemblyLists = [] } = useAssemblyLists();
+  const { data: activeShoppingLists = [] } = useShoppingLists('active');
 
   const isLoading = loadingStock || loadingProducts;
 
