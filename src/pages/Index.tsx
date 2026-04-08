@@ -1,14 +1,16 @@
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Package, Box, AlertTriangle, TrendingUp, Euro, MapPin, ExternalLink } from 'lucide-react';
+import { Package, Box, AlertTriangle, TrendingUp, Euro, MapPin, ExternalLink, ShoppingCart, CheckCircle2 } from 'lucide-react';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import AppLayout from '@/components/AppLayout';
 import { useStockItems } from '@/hooks/useStockItems';
 import { useProducts } from '@/hooks/useProducts';
 import { useAssemblyLists } from '@/hooks/useAssemblyLists';
+import { useShoppingLists } from '@/hooks/useShoppingLists';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { Button } from '@/components/ui/button';
 
 const CHART_COLORS = [
   'hsl(35, 92%, 50%)',
@@ -26,6 +28,7 @@ const Index = () => {
   const { data: stockItems = [], isLoading: loadingStock } = useStockItems();
   const { data: products = [], isLoading: loadingProducts } = useProducts();
   const { data: assemblyLists = [] } = useAssemblyLists();
+  const { data: activeShoppingLists = [] } = useShoppingLists('active');
 
   const isLoading = loadingStock || loadingProducts;
 
@@ -259,6 +262,49 @@ const Index = () => {
                         <Progress value={product.minQuantity > 0 ? Math.min((product.quantityProduced / product.minQuantity) * 100, 100) : 0} className="h-1.5 flex-1 max-w-[120px]" />
                         <span className="text-xs font-mono text-warning font-semibold">{product.quantityProduced}/{product.minQuantity}</span>
                       </div>
+                    </div>
+                    <ExternalLink className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+        {/* Shopping lists */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-semibold flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <ShoppingCart className="w-4 h-4 text-primary" />
+                Listes de courses en cours
+                {activeShoppingLists.length > 0 && (
+                  <Badge variant="secondary" className="text-xs">{activeShoppingLists.length}</Badge>
+                )}
+              </div>
+              <Button size="sm" variant="outline" onClick={() => navigate('/shopping')}>
+                Voir tout
+              </Button>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {activeShoppingLists.length === 0 ? (
+              <p className="text-sm text-muted-foreground py-4 text-center">Aucune liste de courses en cours</p>
+            ) : (
+              <div className="space-y-2">
+                {activeShoppingLists.slice(0, 5).map(list => (
+                  <div
+                    key={list.id}
+                    onClick={() => navigate('/shopping')}
+                    className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/60 cursor-pointer transition-colors group"
+                  >
+                    <div className="p-2 rounded-lg bg-primary/10">
+                      <ShoppingCart className="w-4 h-4 text-primary" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate group-hover:text-primary transition-colors">{list.name}</p>
+                      <p className="text-xs text-muted-foreground">
+                        Créée le {new Date(list.created_at).toLocaleDateString('fr-FR')}
+                      </p>
                     </div>
                     <ExternalLink className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
                   </div>

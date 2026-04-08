@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { Package, Box, ClipboardList, LayoutDashboard, QrCode, Database, Plus, Trash2, ChevronDown, LogOut, Users } from 'lucide-react';
+import { Package, Box, ClipboardList, LayoutDashboard, QrCode, Database, Plus, Trash2, ChevronDown, LogOut, Users, ShoppingCart } from 'lucide-react';
 import ThemeToggle from '@/components/ThemeToggle';
 import { useWorkspaceContext } from '@/contexts/WorkspaceContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -22,6 +22,7 @@ const navItems = [
   { to: '/stock', icon: Package, label: 'Stock' },
   { to: '/products', icon: Box, label: 'Produits' },
   { to: '/assembly', icon: ClipboardList, label: 'Assemblages' },
+  { to: '/shopping', icon: ShoppingCart, label: 'Courses' },
 ];
 
 const AppSidebar = () => {

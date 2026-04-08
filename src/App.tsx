@@ -18,6 +18,7 @@ import AssemblyEditPage from "./pages/AssemblyEditPage";
 import AuthPage from "./pages/AuthPage";
 import PendingApprovalPage from "./pages/PendingApprovalPage";
 import AdminUsersPage from "./pages/AdminUsersPage";
+import ShoppingListPage from "./pages/ShoppingListPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -65,6 +66,7 @@ function AppRoutes() {
         <Route path="/assembly/new/edit" element={<AssemblyEditPage />} />
         <Route path="/assembly/:id" element={<AssemblyDetailPage />} />
         <Route path="/assembly/:id/edit" element={<AssemblyEditPage />} />
+        <Route path="/shopping" element={<ShoppingListPage />} />
         {isAdmin && <Route path="/admin/users" element={<AdminUsersPage />} />}
         <Route path="*" element={<NotFound />} />
       </Routes>
