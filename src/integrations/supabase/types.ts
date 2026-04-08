@@ -14,6 +14,98 @@ export type Database = {
   }
   public: {
     Tables: {
+      assembly_items: {
+        Row: {
+          assembly_list_id: string
+          created_at: string
+          id: string
+          quantity: number
+          stock_item_id: string
+        }
+        Insert: {
+          assembly_list_id: string
+          created_at?: string
+          id?: string
+          quantity?: number
+          stock_item_id: string
+        }
+        Update: {
+          assembly_list_id?: string
+          created_at?: string
+          id?: string
+          quantity?: number
+          stock_item_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assembly_items_assembly_list_id_fkey"
+            columns: ["assembly_list_id"]
+            isOneToOne: false
+            referencedRelation: "assembly_lists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      assembly_lists: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          product_name: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id: string
+          name: string
+          product_name?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          product_name?: string | null
+        }
+        Relationships: []
+      }
+      products: {
+        Row: {
+          assembly_list_id: string | null
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string | null
+          min_quantity: number
+          name: string
+          quantity_produced: number
+          sku: string
+        }
+        Insert: {
+          assembly_list_id?: string | null
+          created_at?: string
+          description?: string | null
+          id: string
+          image_url?: string | null
+          min_quantity?: number
+          name: string
+          quantity_produced?: number
+          sku?: string
+        }
+        Update: {
+          assembly_list_id?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          min_quantity?: number
+          name?: string
+          quantity_produced?: number
+          sku?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -115,6 +207,81 @@ export type Database = {
           status?: string
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      stock_items: {
+        Row: {
+          category: string
+          component_footprint: string | null
+          component_value: string | null
+          component_voltage: string | null
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string | null
+          location: string | null
+          min_quantity: number
+          name: string
+          price: number
+          quantity: number
+          screw_length: string | null
+          screw_shape: string | null
+          screw_type: string | null
+          sku: string
+          supplier: string | null
+          supplier_link: string | null
+          supplier_ref: string | null
+          unit: string | null
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          component_footprint?: string | null
+          component_value?: string | null
+          component_voltage?: string | null
+          created_at?: string
+          description?: string | null
+          id: string
+          image_url?: string | null
+          location?: string | null
+          min_quantity?: number
+          name: string
+          price?: number
+          quantity?: number
+          screw_length?: string | null
+          screw_shape?: string | null
+          screw_type?: string | null
+          sku?: string
+          supplier?: string | null
+          supplier_link?: string | null
+          supplier_ref?: string | null
+          unit?: string | null
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          component_footprint?: string | null
+          component_value?: string | null
+          component_voltage?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          location?: string | null
+          min_quantity?: number
+          name?: string
+          price?: number
+          quantity?: number
+          screw_length?: string | null
+          screw_shape?: string | null
+          screw_type?: string | null
+          sku?: string
+          supplier?: string | null
+          supplier_link?: string | null
+          supplier_ref?: string | null
+          unit?: string | null
+          updated_at?: string
         }
         Relationships: []
       }
