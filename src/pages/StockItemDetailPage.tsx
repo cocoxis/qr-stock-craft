@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Edit2, Trash2, QrCode, Calendar, Clock, ExternalLink, Package } from 'lucide-react';
+import { ArrowLeft, Edit2, Trash2, QrCode, Calendar, Clock, ExternalLink, Package, ShoppingCart } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import QRCodeDisplay from '@/components/QRCodeDisplay';
 import { useStockItems, useDeleteStockItem } from '@/hooks/useStockItems';
@@ -9,14 +9,23 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle,
+} from '@/components/ui/dialog';
 import { useState } from 'react';
+import { useShoppingLists, useAddShoppingListItem } from '@/hooks/useShoppingLists';
+import { useToast } from '@/hooks/use-toast';
 
 const StockItemDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const { data: items = [], isLoading } = useStockItems();
   const deleteMutation = useDeleteStockItem();
   const [deleteConfirm, setDeleteConfirm] = useState(false);
+  const [showListPicker, setShowListPicker] = useState(false);
+  const { data: activeLists = [] } = useShoppingLists('active');
+  const addItem = useAddShoppingListItem();
 
   const item = items.find(i => i.id === id);
 
@@ -48,6 +57,22 @@ const StockItemDetailPage = () => {
     deleteMutation.mutate(item.id, { onSuccess: () => navigate('/stock') });
   };
 
+  const handleAddToList = (listId: string) => {
+    if (!item) return;
+    addItem.mutate({
+      shopping_list_id: listId,
+      name: item.name,
+      sku: item.sku,
+      quantity: 1,
+      unit: item.unit,
+      supplier: item.supplier,
+      supplier_link: item.supplierLink,
+    }, {
+      onSuccess: () => { toast({ title: `${item.name} ajouté à la liste` }); setShowListPicker(false); },
+      onError: (e) => toast({ title: 'Erreur', description: e.message, variant: 'destructive' }),
+    });
+  };
+
   const stockPercent = item.minQuantity > 0 ? Math.min(100, (item.quantity / item.minQuantity) * 100) : 100;
   const isCritical = item.quantity <= item.minQuantity;
 
@@ -63,6 +88,9 @@ const StockItemDetailPage = () => {
             <p className="text-sm font-mono text-muted-foreground">{item.sku}</p>
           </div>
           <div className="flex gap-2 shrink-0">
+            <Button variant="outline" onClick={() => setShowListPicker(true)}>
+              <ShoppingCart className="w-4 h-4 mr-2" /> Liste de courses
+            </Button>
             <Button variant="outline" onClick={() => navigate(`/stock/${item.id}/edit`)}>
               <Edit2 className="w-4 h-4 mr-2" /> Modifier
             </Button>
@@ -208,6 +236,41 @@ const StockItemDetailPage = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Shopping list picker */}
+      <Dialog open={showListPicker} onOpenChange={setShowListPicker}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Ajouter à une liste de courses</DialogTitle>
+          </DialogHeader>
+          {activeLists.length === 0 ? (
+            <div className="text-center py-6 space-y-3">
+              <p className="text-sm text-muted-foreground">Aucune liste active</p>
+              <Button variant="outline" onClick={() => navigate('/shopping')}>
+                Créer une liste
+              </Button>
+            </div>
+          ) : (
+            <div className="space-y-1 max-h-60 overflow-y-auto">
+              {activeLists.map(list => (
+                <button
+                  key={list.id}
+                  onClick={() => handleAddToList(list.id)}
+                  className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-muted/60 transition-colors text-left"
+                >
+                  <ShoppingCart className="w-4 h-4 text-primary shrink-0" />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium truncate">{list.name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {new Date(list.created_at).toLocaleDateString('fr-FR')}
+                    </p>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </AppLayout>
   );
 };
