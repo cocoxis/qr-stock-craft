@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Edit2, Trash2, QrCode, Calendar, Clock, ExternalLink, Package } from 'lucide-react';
+import { ArrowLeft, Edit2, Trash2, QrCode, Calendar, Clock, ExternalLink, Package, ShoppingCart } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import QRCodeDisplay from '@/components/QRCodeDisplay';
 import { useStockItems, useDeleteStockItem } from '@/hooks/useStockItems';
@@ -9,14 +9,23 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle,
+} from '@/components/ui/dialog';
 import { useState } from 'react';
+import { useShoppingLists, useAddShoppingListItem } from '@/hooks/useShoppingLists';
+import { useToast } from '@/hooks/use-toast';
 
 const StockItemDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const { data: items = [], isLoading } = useStockItems();
   const deleteMutation = useDeleteStockItem();
   const [deleteConfirm, setDeleteConfirm] = useState(false);
+  const [showListPicker, setShowListPicker] = useState(false);
+  const { data: activeLists = [] } = useShoppingLists('active');
+  const addItem = useAddShoppingListItem();
 
   const item = items.find(i => i.id === id);
 
