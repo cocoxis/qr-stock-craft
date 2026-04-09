@@ -5,6 +5,7 @@ import QRCodeDisplay from '@/components/QRCodeDisplay';
 import { useStockItems, useDeleteStockItem } from '@/hooks/useStockItems';
 import type { StockItem } from '@/types';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
