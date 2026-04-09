@@ -236,6 +236,41 @@ const StockItemDetailPage = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Shopping list picker */}
+      <Dialog open={showListPicker} onOpenChange={setShowListPicker}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Ajouter à une liste de courses</DialogTitle>
+          </DialogHeader>
+          {activeLists.length === 0 ? (
+            <div className="text-center py-6 space-y-3">
+              <p className="text-sm text-muted-foreground">Aucune liste active</p>
+              <Button variant="outline" onClick={() => navigate('/shopping')}>
+                Créer une liste
+              </Button>
+            </div>
+          ) : (
+            <div className="space-y-1 max-h-60 overflow-y-auto">
+              {activeLists.map(list => (
+                <button
+                  key={list.id}
+                  onClick={() => handleAddToList(list.id)}
+                  className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-muted/60 transition-colors text-left"
+                >
+                  <ShoppingCart className="w-4 h-4 text-primary shrink-0" />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium truncate">{list.name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {new Date(list.created_at).toLocaleDateString('fr-FR')}
+                    </p>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </AppLayout>
   );
 };
