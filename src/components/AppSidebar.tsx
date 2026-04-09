@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { Package, Box, ClipboardList, LayoutDashboard, QrCode, Database, Plus, Trash2, ChevronDown, LogOut, Users, ShoppingCart } from 'lucide-react';
+import { Package, Box, ClipboardList, LayoutDashboard, QrCode, Database, Plus, Trash2, ChevronDown, LogOut, Users, ShoppingCart, Settings } from 'lucide-react';
 import ThemeToggle from '@/components/ThemeToggle';
 import { useWorkspaceContext } from '@/contexts/WorkspaceContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -16,6 +16,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { useSettings } from '@/hooks/useSettings';
 
 const navItems = [
   { to: '/', icon: LayoutDashboard, label: 'Tableau de bord' },
@@ -23,10 +24,12 @@ const navItems = [
   { to: '/products', icon: Box, label: 'Produits' },
   { to: '/assembly', icon: ClipboardList, label: 'Assemblages' },
   { to: '/shopping', icon: ShoppingCart, label: 'Courses' },
+  { to: '/settings', icon: Settings, label: 'Réglages' },
 ];
 
 const AppSidebar = () => {
   const location = useLocation();
+  const { settings } = useSettings();
   const { workspaces, activeWorkspace, activeId, setActiveId, createWorkspace, deleteWorkspace } = useWorkspaceContext();
   const { signOut, isAdmin, user } = useAuth();
   const [showWsList, setShowWsList] = useState(false);
@@ -98,23 +101,25 @@ const AppSidebar = () => {
       </div>
 
       <nav className="flex-1 p-3 space-y-1">
-        {navItems.map(({ to, icon: Icon, label }) => {
-          const isActive = location.pathname === to;
-          return (
-            <NavLink
-              key={to}
-              to={to}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 ${
-                isActive
-                  ? 'bg-sidebar-accent text-sidebar-primary'
-                  : 'text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent/50'
-              }`}
-            >
-              <Icon className="w-4 h-4" />
-              {label}
-            </NavLink>
-          );
-        })}
+        {navItems
+          .filter(({ to }) => !settings.hiddenTabs.includes(to))
+          .map(({ to, icon: Icon, label }) => {
+            const isActive = location.pathname === to;
+            return (
+              <NavLink
+                key={to}
+                to={to}
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 ${
+                  isActive
+                    ? 'bg-sidebar-accent text-sidebar-primary'
+                    : 'text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent/50'
+                }`}
+              >
+                <Icon className="w-4 h-4" />
+                {label}
+              </NavLink>
+            );
+          })}
         {isAdmin && (
           <NavLink
             to="/admin/users"
