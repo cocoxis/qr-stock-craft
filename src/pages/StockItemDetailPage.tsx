@@ -57,6 +57,22 @@ const StockItemDetailPage = () => {
     deleteMutation.mutate(item.id, { onSuccess: () => navigate('/stock') });
   };
 
+  const handleAddToList = (listId: string) => {
+    if (!item) return;
+    addItem.mutate({
+      shopping_list_id: listId,
+      name: item.name,
+      sku: item.sku,
+      quantity: 1,
+      unit: item.unit,
+      supplier: item.supplier,
+      supplier_link: item.supplierLink,
+    }, {
+      onSuccess: () => { toast({ title: `${item.name} ajouté à la liste` }); setShowListPicker(false); },
+      onError: (e) => toast({ title: 'Erreur', description: e.message, variant: 'destructive' }),
+    });
+  };
+
   const stockPercent = item.minQuantity > 0 ? Math.min(100, (item.quantity / item.minQuantity) * 100) : 100;
   const isCritical = item.quantity <= item.minQuantity;
 
