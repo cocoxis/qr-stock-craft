@@ -245,7 +245,7 @@ const StockItemDetailPage = () => {
       </AlertDialog>
 
       {/* Shopping list picker */}
-      <Dialog open={showListPicker} onOpenChange={setShowListPicker}>
+      <Dialog open={showListPicker} onOpenChange={(open) => { setShowListPicker(open); if (!open) { setSelectedListForAdd(null); setAddQty(1); } }}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
             <DialogTitle>Ajouter à une liste de courses</DialogTitle>
@@ -257,12 +257,36 @@ const StockItemDetailPage = () => {
                 Créer une liste
               </Button>
             </div>
+          ) : selectedListForAdd ? (
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Combien de <span className="font-medium text-foreground">{item?.name}</span> ajouter ?
+              </p>
+              <div className="flex items-center gap-3 justify-center">
+                <Button size="icon" variant="outline" onClick={() => setAddQty(Math.max(1, addQty - 1))}>−</Button>
+                <Input
+                  type="number"
+                  value={addQty}
+                  onChange={(e) => setAddQty(Math.max(1, parseInt(e.target.value) || 1))}
+                  className="w-20 text-center text-lg font-mono"
+                  min="1"
+                />
+                <Button size="icon" variant="outline" onClick={() => setAddQty(addQty + 1)}>+</Button>
+              </div>
+              <p className="text-xs text-center text-muted-foreground">{item?.unit}</p>
+              <div className="flex gap-2">
+                <Button variant="outline" className="flex-1" onClick={() => setSelectedListForAdd(null)}>Retour</Button>
+                <Button className="flex-1" onClick={() => handleAddToList(selectedListForAdd)}>
+                  Ajouter {addQty} {item?.unit}
+                </Button>
+              </div>
+            </div>
           ) : (
             <div className="space-y-1 max-h-60 overflow-y-auto">
               {activeLists.map(list => (
                 <button
                   key={list.id}
-                  onClick={() => handleAddToList(list.id)}
+                  onClick={() => setSelectedListForAdd(list.id)}
                   className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-muted/60 transition-colors text-left"
                 >
                   <ShoppingCart className="w-4 h-4 text-primary shrink-0" />
