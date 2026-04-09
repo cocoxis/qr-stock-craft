@@ -24,7 +24,6 @@ const navItems = [
   { to: '/products', icon: Box, label: 'Produits' },
   { to: '/assembly', icon: ClipboardList, label: 'Assemblages' },
   { to: '/shopping', icon: ShoppingCart, label: 'Courses' },
-  { to: '/settings', icon: Settings, label: 'Réglages' },
 ];
 
 const AppSidebar = () => {
@@ -139,6 +138,13 @@ const AppSidebar = () => {
         <div className="flex items-center justify-between">
           <p className="text-xs text-sidebar-foreground/60 truncate max-w-[140px]">{user?.email}</p>
           <div className="flex items-center gap-1">
+            <NavLink
+              to="/settings"
+              className="h-8 w-8 flex items-center justify-center rounded-md text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors"
+              title="Réglages"
+            >
+              <Settings className="w-4 h-4" />
+            </NavLink>
             <ThemeToggle />
             <Button
               size="icon"
