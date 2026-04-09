@@ -24,6 +24,8 @@ const StockItemDetailPage = () => {
   const deleteMutation = useDeleteStockItem();
   const [deleteConfirm, setDeleteConfirm] = useState(false);
   const [showListPicker, setShowListPicker] = useState(false);
+  const [addQty, setAddQty] = useState(1);
+  const [selectedListForAdd, setSelectedListForAdd] = useState<string | null>(null);
   const { data: activeLists = [] } = useShoppingLists('active');
   const addItem = useAddShoppingListItem();
 
@@ -63,12 +65,17 @@ const StockItemDetailPage = () => {
       shopping_list_id: listId,
       name: item.name,
       sku: item.sku,
-      quantity: 1,
+      quantity: addQty,
       unit: item.unit,
       supplier: item.supplier,
       supplier_link: item.supplierLink,
     }, {
-      onSuccess: () => { toast({ title: `${item.name} ajouté à la liste` }); setShowListPicker(false); },
+      onSuccess: () => {
+        toast({ title: `${addQty}× ${item.name} ajouté à la liste` });
+        setShowListPicker(false);
+        setSelectedListForAdd(null);
+        setAddQty(1);
+      },
       onError: (e) => toast({ title: 'Erreur', description: e.message, variant: 'destructive' }),
     });
   };
