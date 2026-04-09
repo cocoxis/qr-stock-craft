@@ -88,6 +88,9 @@ const StockItemDetailPage = () => {
             <p className="text-sm font-mono text-muted-foreground">{item.sku}</p>
           </div>
           <div className="flex gap-2 shrink-0">
+            <Button variant="outline" onClick={() => setShowListPicker(true)}>
+              <ShoppingCart className="w-4 h-4 mr-2" /> Liste de courses
+            </Button>
             <Button variant="outline" onClick={() => navigate(`/stock/${item.id}/edit`)}>
               <Edit2 className="w-4 h-4 mr-2" /> Modifier
             </Button>
