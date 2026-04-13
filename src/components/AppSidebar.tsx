@@ -1,9 +1,8 @@
 import { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { Package, Box, ClipboardList, LayoutDashboard, QrCode, Database, Plus, Trash2, ChevronDown, LogOut, Users, ShoppingCart, Settings } from 'lucide-react';
+import { Package, Box, ClipboardList, LayoutDashboard, QrCode, Database, Plus, Trash2, ChevronDown, ShoppingCart, Settings } from 'lucide-react';
 import ThemeToggle from '@/components/ThemeToggle';
 import { useWorkspaceContext } from '@/contexts/WorkspaceContext';
-import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -30,7 +29,6 @@ const AppSidebar = () => {
   const location = useLocation();
   const { settings } = useSettings();
   const { workspaces, activeWorkspace, activeId, setActiveId, createWorkspace, deleteWorkspace } = useWorkspaceContext();
-  const { signOut, isAdmin, user } = useAuth();
   const [showWsList, setShowWsList] = useState(false);
   const [newWsName, setNewWsName] = useState('');
   const [deleteWs, setDeleteWs] = useState<string | null>(null);
@@ -119,43 +117,18 @@ const AppSidebar = () => {
               </NavLink>
             );
           })}
-        {isAdmin && (
-          <NavLink
-            to="/admin/users"
-            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 ${
-              location.pathname === '/admin/users'
-                ? 'bg-sidebar-accent text-sidebar-primary'
-                : 'text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent/50'
-            }`}
-          >
-            <Users className="w-4 h-4" />
-            Utilisateurs
-          </NavLink>
-        )}
       </nav>
 
       <div className="p-4 border-t border-sidebar-border space-y-3">
-        <div className="flex items-center justify-between">
-          <p className="text-xs text-sidebar-foreground/60 truncate max-w-[140px]">{user?.email}</p>
-          <div className="flex items-center gap-1">
-            <NavLink
-              to="/settings"
-              className="h-8 w-8 flex items-center justify-center rounded-md text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors"
-              title="Réglages"
-            >
-              <Settings className="w-4 h-4" />
-            </NavLink>
-            <ThemeToggle />
-            <Button
-              size="icon"
-              variant="ghost"
-              className="h-8 w-8 text-sidebar-foreground/60 hover:text-sidebar-foreground"
-              onClick={signOut}
-              title="Se déconnecter"
-            >
-              <LogOut className="w-4 h-4" />
-            </Button>
-          </div>
+        <div className="flex items-center justify-end gap-1">
+          <NavLink
+            to="/settings"
+            className="h-8 w-8 flex items-center justify-center rounded-md text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors"
+            title="Réglages"
+          >
+            <Settings className="w-4 h-4" />
+          </NavLink>
+          <ThemeToggle />
         </div>
         <p className="text-xs text-sidebar-foreground/40 font-mono">v1.0.0</p>
       </div>

@@ -1,6 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
 
 export interface ShoppingListItem {
   id: string;
@@ -17,7 +16,6 @@ export interface ShoppingListItem {
 
 export interface ShoppingList {
   id: string;
-  user_id: string;
   name: string;
   status: 'active' | 'archived';
   created_at: string;
@@ -65,12 +63,11 @@ export function useShoppingListWithItems(id: string | undefined) {
 
 export function useCreateShoppingList() {
   const qc = useQueryClient();
-  const { user } = useAuth();
   return useMutation({
     mutationFn: async (name: string) => {
       const { data, error } = await supabase
         .from('shopping_lists')
-        .insert({ name, user_id: user!.id } as any)
+        .insert({ name } as any)
         .select()
         .single();
       if (error) throw error;
