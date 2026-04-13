@@ -13,6 +13,7 @@ interface QRCodeDisplayProps {
 }
 
 const QR_PRINT_SIZES = [
+  { value: '30', label: '10×10mm' },
   { value: '60', label: '20×20mm' },
   { value: '100', label: '35×35mm' },
   { value: '150', label: '50×50mm' },
