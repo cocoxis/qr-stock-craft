@@ -167,8 +167,8 @@ const StockPage = () => {
                             <HoverCardTrigger asChild>
                               <img src={item.imageUrl} alt={item.name} className="w-8 h-8 rounded object-cover border border-border cursor-zoom-in" />
                             </HoverCardTrigger>
-                            <HoverCardContent side="right" className="w-96 p-1">
-                              <img src={item.imageUrl} alt={item.name} className="w-full h-auto rounded object-contain max-h-96" />
+                            <HoverCardContent side="right" className="w-auto max-w-[500px] p-1">
+                              <img src={item.imageUrl} alt={item.name} className="rounded object-contain max-w-[480px] max-h-[480px]" />
                             </HoverCardContent>
                           </HoverCard>
                         )}
