@@ -72,6 +72,9 @@ const QRCodeDisplay = ({ value, size = 120, label, showPrint = false, itemName }
 
   return (
     <div className="flex flex-col items-center gap-2">
+      {itemName && (
+        <span className="text-sm font-semibold text-foreground text-center max-w-[180px] truncate">{itemName}</span>
+      )}
       <div className="qr-container" ref={qrRef}>
         <QRCodeSVG
           value={value}
