@@ -138,7 +138,7 @@ const StockPage = () => {
           </Select>
         </div>
 
-        <div className="glass-card rounded-xl overflow-hidden">
+        <div className="glass-card rounded-xl overflow-visible">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
