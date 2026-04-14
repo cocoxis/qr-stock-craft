@@ -203,6 +203,17 @@ const StockItemDetailPage = () => {
               </div>
             </div>
 
+            {item.link && (
+              <div className="rounded-xl border border-border p-4">
+                <p className="text-xs text-muted-foreground mb-2">Lien externe</p>
+                <a href={item.link} target="_blank" rel="noopener noreferrer">
+                  <Button variant="outline" size="sm">
+                    <ExternalLink className="w-4 h-4 mr-2" /> Ouvrir le lien
+                  </Button>
+                </a>
+              </div>
+            )}
+
             {item.category?.toLowerCase() === 'composants' && (item.componentValue || item.componentVoltage || item.componentFootprint) && (
               <div className="rounded-xl border border-border p-4">
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Détails composant</p>

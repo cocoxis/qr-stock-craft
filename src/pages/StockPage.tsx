@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Plus, Search, QrCode, Trash2, Edit2, Camera, Printer, Filter } from 'lucide-react';
+import { Plus, Search, QrCode, Trash2, Edit2, Camera, Printer, Filter, ExternalLink } from 'lucide-react';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
 import AppLayout from '@/components/AppLayout';
 import QRCodeDisplay from '@/components/QRCodeDisplay';
@@ -190,6 +190,13 @@ const StockPage = () => {
                     <td className="p-3 text-right font-mono">{item.price.toFixed(2)}€</td>
                     <td className="p-3 text-right">
                       <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
+                        {item.link && (
+                          <a href={item.link} target="_blank" rel="noopener noreferrer">
+                            <Button variant="ghost" size="icon" className="h-7 w-7" title="Ouvrir le lien">
+                              <ExternalLink className="w-3.5 h-3.5" />
+                            </Button>
+                          </a>
+                        )}
                         <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setQrItem(item)}>
                           <QrCode className="w-3.5 h-3.5" />
                         </Button>

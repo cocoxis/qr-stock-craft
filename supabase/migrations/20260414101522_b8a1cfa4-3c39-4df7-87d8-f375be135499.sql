@@ -1,0 +1,1 @@
+ALTER TABLE public.stock_items ADD COLUMN link text DEFAULT '';
