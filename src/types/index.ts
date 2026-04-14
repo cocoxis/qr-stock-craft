@@ -23,6 +23,7 @@ export interface StockItem {
   screwType?: string;
   screwLength?: string;
   screwShape?: string;
+  link?: string;
 }
 
 export interface Product {

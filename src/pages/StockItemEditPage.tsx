@@ -48,6 +48,7 @@ const StockItemEditPage = () => {
         componentFootprint: existingItem.componentFootprint || '',
         screwType: existingItem.screwType || '', screwLength: existingItem.screwLength || '',
         screwShape: existingItem.screwShape || '',
+        link: existingItem.link || '',
       };
     }
     return {
@@ -55,6 +56,7 @@ const StockItemEditPage = () => {
       imageUrl: '', quantity: 0, minQuantity: 0, unit: 'pcs', location: '', price: 0, updatedAt: '',
       componentValue: '', componentVoltage: '', componentFootprint: '',
       screwType: '', screwLength: '', screwShape: '',
+      link: '',
     };
   });
 
@@ -191,6 +193,11 @@ const StockItemEditPage = () => {
                 <Input placeholder="Réf. fournisseur" value={form.supplierRef} onChange={(e) => setForm({ ...form, supplierRef: e.target.value })} className="font-mono" />
               </div>
               <Input placeholder="Lien fournisseur (URL)" value={form.supplierLink} onChange={(e) => setForm({ ...form, supplierLink: e.target.value })} type="url" />
+            </div>
+
+            <div className="rounded-xl border border-border p-5 space-y-4">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Lien externe</p>
+              <Input placeholder="URL (datasheet, documentation, etc.)" value={form.link} onChange={(e) => setForm({ ...form, link: e.target.value })} type="url" />
             </div>
 
             {form.category?.toLowerCase() === 'composants' && (

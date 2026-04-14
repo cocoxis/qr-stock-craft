@@ -28,6 +28,7 @@ function rowToItem(row: any): StockItem {
     screwType: row.screw_type,
     screwLength: row.screw_length,
     screwShape: row.screw_shape,
+    link: row.link,
   };
 }
 
@@ -53,6 +54,7 @@ function itemToRow(item: StockItem): Record<string, unknown> {
     screw_type: item.screwType,
     screw_length: item.screwLength,
     screw_shape: item.screwShape,
+    link: item.link,
     created_at: item.createdAt,
     updated_at: item.updatedAt,
   };
