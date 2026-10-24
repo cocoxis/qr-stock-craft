@@ -2,8 +2,9 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+// Without a configured project (self-hosted Docker image), the API is served by the same origin as the app
+export const SUPABASE_URL: string = import.meta.env.VITE_SUPABASE_URL || window.location.origin;
+export const SUPABASE_PUBLISHABLE_KEY: string = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || 'self-hosted';
 
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";

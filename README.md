@@ -32,6 +32,7 @@ Know what you have, where it is, and label every ESD box with a code your phone 
 - [Screenshots](#screenshots)
 - [Labels for the Brother PT-P700](#labels-for-the-brother-pt-p700)
 - [Getting started](#getting-started)
+- [Self-hosting on a NAS](#self-hosting-on-a-nas)
 - [Importing LCSC orders](#importing-lcsc-orders)
 - [Data that never changes](#data-that-never-changes)
 - [Project structure](#project-structure)
@@ -154,7 +155,7 @@ bun install
 
 ### 2. Database
 
-1. In Supabase, open **SQL Editor**, paste [`supabase/setup.sql`](supabase/setup.sql) and run it. It creates the tables, policies and grants, and can be run again safely.
+1. In Supabase, open **SQL Editor**, paste [`supabase/setup.sql`](supabase/setup.sql) and run it. It creates the tables, policies and grants, and can be run again safely. To start with sample parts, also run [`supabase/seed_e12_resistors.sql`](supabase/seed_e12_resistors.sql) (E12 0805 resistors).
 2. Optional but recommended once you print labels: run [`supabase/migrations/20261024180000_lock_label_fields.sql`](supabase/migrations/20261024180000_lock_label_fields.sql) to lock the printed fields (see [below](#data-that-never-changes)).
 3. Deploy the LCSC lookup function (it proxies the LCSC API, which does not allow browser requests):
 
@@ -184,6 +185,20 @@ bun run printer    # label relay on http://127.0.0.1:8765 (keep the window open)
 ```
 
 The Labels page shows **Direct printing: Brother PT-P700** in green once the relay finds the printer. To use another queue name: `PTOUCH_PRINTER="My printer" bun run printer`.
+
+## Self-hosting on a NAS
+
+StockQR also runs entirely on your own server with Docker: Postgres, PostgREST and the app image built by GitHub Actions (`ghcr.io/cocoxis/qr-stock-craft`). The Supabase project then becomes a backup: on first start an empty database is filled from it, and every few hours the NAS data is copied back to it, along with a JSON backup file on the NAS.
+
+```mermaid
+flowchart LR
+  B["Browser / phone"] --> APP["app (Bun)"]
+  APP --> REST["PostgREST"] --> DB[("Postgres")]
+  APP -. "backup" .-> SB[("Supabase")]
+  APP -. "backup" .-> F["JSON files"]
+```
+
+Step-by-step Unraid guide: [`deploy/README.md`](deploy/README.md).
 
 ## Importing LCSC orders
 
@@ -233,9 +248,14 @@ src/
 scripts/
 ├── ptouch-relay.ts         Local print relay (Bun)
 └── raw-print.ps1           Sends a file RAW to a Windows print queue
+server/
+├── index.ts                Self-hosted server: app, API proxy, LCSC lookup
+└── backup.ts               Backup files, Supabase mirror and first-start restore
+deploy/                     Docker Compose stack for a NAS (Unraid)
 supabase/
 ├── setup.sql               Full database setup for a new project
 ├── migrations/             Schema history
+├── seed_e12_resistors.sql  Optional sample parts
 └── functions/lcsc/         Edge Function proxying the LCSC API
 ```
 

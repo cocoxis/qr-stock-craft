@@ -1,3 +1,5 @@
+import { SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from '@/integrations/supabase/client';
+
 export interface Spec {
   name: string;
   value: string;
@@ -23,9 +25,9 @@ export const isLcscCode = (code: string) => /^C\d{3,}$/i.test(code.trim());
 
 /** Fetches image + specs for an LCSC part through the `lcsc` Edge Function. */
 export async function fetchLcscPart(code: string): Promise<LcscPart> {
-  const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/lcsc?code=${encodeURIComponent(code.trim().toUpperCase())}`;
+  const url = `${SUPABASE_URL}/functions/v1/lcsc?code=${encodeURIComponent(code.trim().toUpperCase())}`;
   const res = await fetch(url, {
-    headers: { apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY },
+    headers: { apikey: SUPABASE_PUBLISHABLE_KEY },
   });
   const data = await res.json().catch(() => null);
   if (!res.ok || !data || data.error) {

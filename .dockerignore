@@ -1,0 +1,12 @@
+node_modules
+dist
+.git
+.github
+docs
+deploy
+*.local
+.env
+.env.*
+LCSC__*.csv
+IMG.*
+supabase/lcsc_commande_*.sql

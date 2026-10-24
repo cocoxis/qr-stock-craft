@@ -1,5 +1,6 @@
 import { Package, Tag, LayoutDashboard, ShoppingCart, Settings } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
+import BackupCard from '@/components/BackupCard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { useSettings } from '@/hooks/useSettings';
@@ -51,6 +52,8 @@ const SettingsPage = () => {
             })}
           </CardContent>
         </Card>
+
+        <BackupCard />
       </div>
     </AppLayout>
   );
