@@ -198,7 +198,7 @@ flowchart LR
   APP -. "backup" .-> F["JSON files"]
 ```
 
-Step-by-step Unraid guide: [`deploy/README.md`](deploy/README.md).
+Step-by-step Unraid guide (one script, no Compose needed): [`deploy/README.md`](deploy/README.md).
 
 ## Importing LCSC orders
 

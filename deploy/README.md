@@ -14,17 +14,27 @@ flowchart LR
 
 ## Install on Unraid
 
-1. Install **Docker Compose Manager** from Community Applications.
-2. **Docker** tab → **Add New Stack** → name it `stockqr`.
-3. Edit the stack:
-   - **Compose file**: paste [`docker-compose.yml`](docker-compose.yml).
-   - **Env file**: paste [`.env.example`](.env.example) and fill it in:
-     - `DB_PASSWORD`: a long password, letters and digits only.
-     - `BACKUP_SUPABASE_URL` and `BACKUP_SUPABASE_KEY`: your Supabase project URL and publishable key (Project Settings → API).
-4. **Compose Up**.
-5. Open `http://<nas>:8085`.
+Unraid has Docker built in; the script below creates the three containers with plain `docker` commands (no Compose needed). Open the Unraid terminal (`>_` icon, top right) and run:
 
-On the first start the database is empty, so StockQR copies everything from the Supabase project. Watch it in the `app` container logs:
+```sh
+mkdir -p /mnt/user/appdata/stockqr && cd /mnt/user/appdata/stockqr
+wget -O stockqr.sh https://raw.githubusercontent.com/cocoxis/qr-stock-craft/main/deploy/stockqr.sh
+bash stockqr.sh
+```
+
+The first run creates `stockqr.env` with a random database password. Edit it (`nano stockqr.env`): set `BACKUP_SUPABASE_URL` and `BACKUP_SUPABASE_KEY` (Supabase → Project Settings → API, publishable key), or empty both to keep backups on the NAS only. Then run `bash stockqr.sh` again.
+
+The containers `stockqr-db`, `stockqr-rest` and `stockqr-app` appear in the Docker tab; the app is at `http://<nas>:8085` (WebUI in the app's menu).
+
+| Command | |
+|---|---|
+| `bash stockqr.sh` | Install, or update to the latest image (data is kept) |
+| `bash stockqr.sh logs` | Follow the app logs |
+| `bash stockqr.sh stop` | Remove the containers (data is kept) |
+
+With Docker Compose instead (any Docker host, or the Compose plugin on Unraid): use [`docker-compose.yml`](docker-compose.yml) with [`.env.example`](.env.example) copied to `.env`.
+
+On the first start the database is empty, so StockQR copies everything from the Supabase project. Watch it with `bash stockqr.sh logs`:
 
 ```text
 Database schema ready
@@ -38,20 +48,20 @@ StockQR listening on :8080
 
 Every `BACKUP_INTERVAL_HOURS` (6 by default) and at each start:
 
-- a JSON file with all tables is written to `APPDATA/backups` (the last `BACKUP_KEEP` are kept);
+- a JSON file with all tables is written to `/mnt/user/appdata/stockqr/backups` (the last `BACKUP_KEEP` are kept);
 - the Supabase project is updated to match the NAS: new and changed rows are copied, deleted rows are removed.
 
 Safety: the Supabase copy is never wiped by an empty or half-empty NAS database. The mirror is skipped when the NAS has no parts, or less than half of what Supabase has, and it is disabled if the first-start restore failed.
 
-Settings → **Backups** shows the last backup and has a **Back up now** button.
+Settings (gear icon at the bottom of the menu) → **Backups** shows the last backup and has a **Back up now** button.
 
 ## Update
 
-The image is rebuilt by GitHub on every push. In Unraid: stack → **Update Stack** (or `docker compose pull && docker compose up -d`). The database schema is updated automatically at start.
+The image is rebuilt by GitHub on every push. On the NAS: `bash stockqr.sh` (or `docker compose pull && docker compose up -d`). The database schema is updated automatically at start.
 
 ## Restore
 
-- **From Supabase**: stop the stack, delete `APPDATA/db`, start again. The empty database is filled from Supabase.
+- **From Supabase**: `bash stockqr.sh stop`, delete `/mnt/user/appdata/stockqr/db`, then `bash stockqr.sh`. The empty database is filled from Supabase.
 - **From a backup file**: each file holds `{ "tables": { "stock_items": [...], ... } }`, rows in the same format as the API.
 
 ## Label printing
