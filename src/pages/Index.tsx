@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Package, AlertTriangle, TrendingUp, Euro, MapPin, ExternalLink, ShoppingCart, CheckCircle2 } from 'lucide-react';
+import { Package, AlertTriangle, TrendingUp, DollarSign, MapPin, ExternalLink, ShoppingCart, CheckCircle2 } from 'lucide-react';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import AppLayout from '@/components/AppLayout';
 import { useStockItems } from '@/hooks/useStockItems';
@@ -70,7 +70,7 @@ const Index = () => {
     {
       label: 'Total value',
       value: totalStockValue.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }),
-      icon: Euro,
+      icon: DollarSign,
       detail: `${categoryData.length} categories`,
       color: 'text-success',
       bg: 'bg-success/10',
