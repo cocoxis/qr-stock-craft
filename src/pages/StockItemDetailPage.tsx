@@ -1,7 +1,10 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Edit2, Trash2, QrCode, Calendar, Clock, ExternalLink, Package, ShoppingCart } from 'lucide-react';
+import { ArrowLeft, Edit2, Trash2, QrCode, Calendar, Clock, ExternalLink, Package, ShoppingCart, Tag } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import QRCodeDisplay from '@/components/QRCodeDisplay';
+import { stockQrValue } from '@/lib/qr';
+import { formatPrice } from '@/lib/format';
+import { isElectronicCategory } from '@/lib/categories';
 import { useStockItems, useDeleteStockItem } from '@/hooks/useStockItems';
 import type { StockItem } from '@/types';
 import { Button } from '@/components/ui/button';
@@ -47,9 +50,9 @@ const StockItemDetailPage = () => {
       <AppLayout>
         <div className="flex flex-col items-center justify-center py-20 gap-4">
           <Package className="w-12 h-12 text-muted-foreground" />
-          <p className="text-muted-foreground">Article introuvable</p>
+          <p className="text-muted-foreground">Item not found</p>
           <Button variant="outline" onClick={() => navigate('/stock')}>
-            <ArrowLeft className="w-4 h-4 mr-2" /> Retour au stock
+            <ArrowLeft className="w-4 h-4 mr-2" /> Back to stock
           </Button>
         </div>
       </AppLayout>
@@ -72,12 +75,12 @@ const StockItemDetailPage = () => {
       supplier_link: item.supplierLink,
     }, {
       onSuccess: () => {
-        toast({ title: `${addQty}× ${item.name} ajouté à la liste` });
+        toast({ title: `${addQty}× ${item.name} added to the list` });
         setShowListPicker(false);
         setSelectedListForAdd(null);
         setAddQty(1);
       },
-      onError: (e) => toast({ title: 'Erreur', description: e.message, variant: 'destructive' }),
+      onError: (e) => toast({ title: 'Error', description: e.message, variant: 'destructive' }),
     });
   };
 
@@ -97,13 +100,13 @@ const StockItemDetailPage = () => {
           </div>
           <div className="flex gap-2 shrink-0">
             <Button variant="outline" onClick={() => setShowListPicker(true)}>
-              <ShoppingCart className="w-4 h-4 mr-2" /> Liste de courses
+              <ShoppingCart className="w-4 h-4 mr-2" /> Shopping list
             </Button>
             <Button variant="outline" onClick={() => navigate(`/stock/${item.id}/edit`)}>
-              <Edit2 className="w-4 h-4 mr-2" /> Modifier
+              <Edit2 className="w-4 h-4 mr-2" /> Edit
             </Button>
             <Button variant="destructive" onClick={() => setDeleteConfirm(true)}>
-              <Trash2 className="w-4 h-4 mr-2" /> Supprimer
+              <Trash2 className="w-4 h-4 mr-2" /> Delete
             </Button>
           </div>
         </div>
@@ -121,24 +124,21 @@ const StockItemDetailPage = () => {
             )}
 
             <div className="rounded-xl border border-border p-4 flex flex-col items-center gap-2">
-              <QRCodeDisplay
-                value={JSON.stringify({ type: 'stock', id: item.id, sku: item.sku, name: item.name })}
-                size={120}
-                label={item.sku}
-                showPrint
-                itemName={item.name}
-              />
+              <QRCodeDisplay value={stockQrValue(item)} size={120} label={item.sku} />
+              <Button variant="outline" size="sm" onClick={() => navigate(`/labels?ids=${encodeURIComponent(item.id)}`)}>
+                <Tag className="w-3.5 h-3.5 mr-1.5" /> Create label
+              </Button>
             </div>
 
             <div className="rounded-xl border border-border p-4 space-y-2 text-sm text-muted-foreground">
               <div className="flex items-center gap-2">
                 <Calendar className="w-4 h-4" />
-                <span>Créé le {new Date(item.createdAt).toLocaleDateString('fr-FR')}</span>
+                <span>Created {new Date(item.createdAt).toLocaleDateString('en-US')}</span>
               </div>
               {item.updatedAt && item.updatedAt !== item.createdAt && (
                 <div className="flex items-center gap-2">
                   <Clock className="w-4 h-4" />
-                  <span>Modifié le {new Date(item.updatedAt).toLocaleDateString('fr-FR')}</span>
+                  <span>Updated {new Date(item.updatedAt).toLocaleDateString('en-US')}</span>
                 </div>
               )}
             </div>
@@ -154,7 +154,7 @@ const StockItemDetailPage = () => {
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <div className="rounded-xl border border-border p-4">
-                <p className="text-xs text-muted-foreground mb-1">Quantité</p>
+                <p className="text-xs text-muted-foreground mb-1">Quantity</p>
                 <p className={`text-xl font-mono font-bold ${isCritical ? 'text-destructive' : 'text-foreground'}`}>
                   {item.quantity}
                 </p>
@@ -167,37 +167,37 @@ const StockItemDetailPage = () => {
                 </div>
               </div>
               <div className="rounded-xl border border-border p-4">
-                <p className="text-xs text-muted-foreground mb-1">Prix unitaire</p>
-                <p className="text-xl font-mono font-bold">{item.price.toFixed(2)}€</p>
+                <p className="text-xs text-muted-foreground mb-1">Unit price</p>
+                <p className="text-xl font-mono font-bold">{formatPrice(item.price)}</p>
               </div>
               <div className="rounded-xl border border-border p-4">
-                <p className="text-xs text-muted-foreground mb-1">Valeur totale</p>
+                <p className="text-xs text-muted-foreground mb-1">Total value</p>
                 <p className="text-xl font-mono font-bold text-primary">
-                  {(item.quantity * item.price).toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}
+                  {formatPrice(item.quantity * item.price, 2)}
                 </p>
               </div>
               <div className="rounded-xl border border-border p-4">
-                <p className="text-xs text-muted-foreground mb-1">Emplacement</p>
+                <p className="text-xs text-muted-foreground mb-1">Location</p>
                 <p className="text-xl font-mono font-bold">{item.location || '—'}</p>
               </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="rounded-xl border border-border p-4">
-                <p className="text-xs text-muted-foreground mb-1">Catégorie</p>
+                <p className="text-xs text-muted-foreground mb-1">Category</p>
                 <span className="inline-block text-sm px-3 py-1 rounded-full bg-secondary text-secondary-foreground font-medium">
                   {item.category || '—'}
                 </span>
               </div>
               <div className="rounded-xl border border-border p-4">
-                <p className="text-xs text-muted-foreground mb-2">Fournisseur</p>
+                <p className="text-xs text-muted-foreground mb-2">Supplier</p>
                 <p className="text-sm font-medium">{item.supplier || '—'}</p>
                 {item.supplierRef && (
-                  <p className="text-xs font-mono text-muted-foreground mt-1">Réf: {item.supplierRef}</p>
+                  <p className="text-xs font-mono text-muted-foreground mt-1">Ref: {item.supplierRef}</p>
                 )}
                 {item.supplierLink && (
                   <a href={item.supplierLink} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline mt-1 flex items-center gap-1">
-                    <ExternalLink className="w-3 h-3" /> Lien fournisseur
+                    <ExternalLink className="w-3 h-3" /> Supplier link
                   </a>
                 )}
               </div>
@@ -205,33 +205,61 @@ const StockItemDetailPage = () => {
 
             {item.link && (
               <div className="rounded-xl border border-border p-4">
-                <p className="text-xs text-muted-foreground mb-2">Lien externe</p>
+                <p className="text-xs text-muted-foreground mb-2">Datasheet</p>
                 <a href={item.link} target="_blank" rel="noopener noreferrer">
                   <Button variant="outline" size="sm">
-                    <ExternalLink className="w-4 h-4 mr-2" /> Ouvrir le lien
+                    <ExternalLink className="w-4 h-4 mr-2" /> Open datasheet
                   </Button>
                 </a>
               </div>
             )}
 
-            {item.category?.toLowerCase() === 'composants' && (item.componentValue || item.componentVoltage || item.componentFootprint) && (
+            {(item.lcscPart || (item.specs && item.specs.length > 0)) && (
               <div className="rounded-xl border border-border p-4">
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Détails composant</p>
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Supplier part number</p>
+                  {item.lcscPart && (
+                    <a
+                      href={`https://www.lcsc.com/product-detail/${item.lcscPart}.html`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm font-mono text-primary hover:underline flex items-center gap-1"
+                    >
+                      LCSC {item.lcscPart} <ExternalLink className="w-3 h-3" />
+                    </a>
+                  )}
+                </div>
+                {item.specs && item.specs.length > 0 && (
+                  <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1.5 text-sm">
+                    {item.specs.map(s => (
+                      <div key={s.name} className="flex justify-between gap-3 border-b border-border/40 py-1">
+                        <dt className="text-muted-foreground">{s.name}</dt>
+                        <dd className="font-medium text-right">{s.value}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                )}
+              </div>
+            )}
+
+            {isElectronicCategory(item.category) && (item.componentValue || item.componentVoltage || item.componentFootprint) && (
+              <div className="rounded-xl border border-border p-4">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Component details</p>
                 <div className="grid grid-cols-3 gap-3">
-                  <div><p className="text-xs text-muted-foreground mb-1">Valeur</p><p className="text-sm font-medium">{item.componentValue || '—'}</p></div>
-                  <div><p className="text-xs text-muted-foreground mb-1">Tension</p><p className="text-sm font-medium">{item.componentVoltage || '—'}</p></div>
-                  <div><p className="text-xs text-muted-foreground mb-1">FootPrint</p><p className="text-sm font-medium">{item.componentFootprint || '—'}</p></div>
+                  <div><p className="text-xs text-muted-foreground mb-1">Value</p><p className="text-sm font-medium">{item.componentValue || '—'}</p></div>
+                  <div><p className="text-xs text-muted-foreground mb-1">Voltage</p><p className="text-sm font-medium">{item.componentVoltage || '—'}</p></div>
+                  <div><p className="text-xs text-muted-foreground mb-1">Package</p><p className="text-sm font-medium">{item.componentFootprint || '—'}</p></div>
                 </div>
               </div>
             )}
 
-            {item.category?.toLowerCase() === 'visserie' && (item.screwType || item.screwLength || item.screwShape) && (
+            {item.category?.toLowerCase() === 'hardware' && (item.screwType || item.screwLength || item.screwShape) && (
               <div className="rounded-xl border border-border p-4">
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Détails visserie</p>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Hardware details</p>
                 <div className="grid grid-cols-3 gap-3">
                   <div><p className="text-xs text-muted-foreground mb-1">Type</p><p className="text-sm font-medium">{item.screwType || '—'}</p></div>
-                  <div><p className="text-xs text-muted-foreground mb-1">Longueur</p><p className="text-sm font-medium">{item.screwLength || '—'}</p></div>
-                  <div><p className="text-xs text-muted-foreground mb-1">Forme</p><p className="text-sm font-medium">{item.screwShape || '—'}</p></div>
+                  <div><p className="text-xs text-muted-foreground mb-1">Length</p><p className="text-sm font-medium">{item.screwLength || '—'}</p></div>
+                  <div><p className="text-xs text-muted-foreground mb-1">Shape</p><p className="text-sm font-medium">{item.screwShape || '—'}</p></div>
                 </div>
               </div>
             )}
@@ -242,15 +270,15 @@ const StockItemDetailPage = () => {
       <AlertDialog open={deleteConfirm} onOpenChange={setDeleteConfirm}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
+            <AlertDialogTitle>Confirm deletion</AlertDialogTitle>
             <AlertDialogDescription>
-              Êtes-vous sûr de vouloir supprimer <span className="font-semibold">{item.name}</span> ({item.sku}) ? Cette action est irréversible.
+              Are you sure you want to delete <span className="font-semibold">{item.name}</span> ({item.sku}) ? This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Supprimer
+              Delete
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -260,19 +288,19 @@ const StockItemDetailPage = () => {
       <Dialog open={showListPicker} onOpenChange={(open) => { setShowListPicker(open); if (!open) { setSelectedListForAdd(null); setAddQty(1); } }}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>Ajouter à une liste de courses</DialogTitle>
+            <DialogTitle>Add to a shopping list</DialogTitle>
           </DialogHeader>
           {activeLists.length === 0 ? (
             <div className="text-center py-6 space-y-3">
-              <p className="text-sm text-muted-foreground">Aucune liste active</p>
+              <p className="text-sm text-muted-foreground">No active list</p>
               <Button variant="outline" onClick={() => navigate('/shopping')}>
-                Créer une liste
+                Create a list
               </Button>
             </div>
           ) : selectedListForAdd ? (
             <div className="space-y-4">
               <p className="text-sm text-muted-foreground">
-                Combien de <span className="font-medium text-foreground">{item?.name}</span> ajouter ?
+                How many <span className="font-medium text-foreground">{item?.name}</span> to add?
               </p>
               <div className="flex items-center gap-3 justify-center">
                 <Button size="icon" variant="outline" onClick={() => setAddQty(Math.max(1, addQty - 1))}>−</Button>
@@ -287,9 +315,9 @@ const StockItemDetailPage = () => {
               </div>
               <p className="text-xs text-center text-muted-foreground">{item?.unit}</p>
               <div className="flex gap-2">
-                <Button variant="outline" className="flex-1" onClick={() => setSelectedListForAdd(null)}>Retour</Button>
+                <Button variant="outline" className="flex-1" onClick={() => setSelectedListForAdd(null)}>Back</Button>
                 <Button className="flex-1" onClick={() => handleAddToList(selectedListForAdd)}>
-                  Ajouter {addQty} {item?.unit}
+                  Add {addQty} {item?.unit}
                 </Button>
               </div>
             </div>
@@ -305,7 +333,7 @@ const StockItemDetailPage = () => {
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-medium truncate">{list.name}</p>
                     <p className="text-xs text-muted-foreground">
-                      {new Date(list.created_at).toLocaleDateString('fr-FR')}
+                      {new Date(list.created_at).toLocaleDateString('en-US')}
                     </p>
                   </div>
                 </button>

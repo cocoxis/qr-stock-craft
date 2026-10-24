@@ -1,10 +1,10 @@
 /**
- * Client API pour communiquer avec PostgREST.
+ * API client for PostgREST.
  *
- * En développement local (Lovable), l'API n'est pas disponible :
- * les hooks détectent cela et font un fallback sur localStorage.
+ * In local development the API is not available:
+ * hooks detect this and fall back to localStorage.
  *
- * En production sur le NAS, VITE_API_URL = "/api" (par défaut).
+ * In production on the NAS, VITE_API_URL = "/api" (default).
  */
 
 const API_URL = import.meta.env.VITE_API_URL || '/api';
@@ -77,7 +77,7 @@ export async function remove(table: string, id: string): Promise<void> {
   await request(`/${table}?id=eq.${id}`, { method: 'DELETE' });
 }
 
-// ── Health check (pour détecter si l'API est dispo) ─────────
+// ── Health check (detects whether the API is available) ─────────
 
 export async function isApiAvailable(): Promise<boolean> {
   try {

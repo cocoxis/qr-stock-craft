@@ -1,12 +1,12 @@
-import type { StockItem, AssemblyList, Product } from '@/types';
+import type { StockItem } from '@/types';
 
 export const initialStockItems: StockItem[] = [
   {
     id: 'stk-001',
-    name: 'Vis M6x20 inox',
+    name: 'Screw M6x20 stainless',
     sku: 'VIS-M6-20',
-    category: 'Visserie',
-    description: 'Vis à tête hexagonale M6x20 en acier inoxydable A2',
+    category: 'Hardware',
+    description: 'Hex head screw M6x20, A2 stainless steel',
     supplier: 'Boulonnerie Express',
     supplierRef: 'BE-VIS-M620',
     supplierLink: '',
@@ -21,10 +21,10 @@ export const initialStockItems: StockItem[] = [
   },
   {
     id: 'stk-002',
-    name: 'Plaque aluminium 2mm',
+    name: 'Aluminium sheet 2mm',
     sku: 'ALU-PL-2',
-    category: 'Matières premières',
-    description: 'Plaque aluminium 1000x2000mm épaisseur 2mm',
+    category: 'Raw materials',
+    description: 'Aluminium sheet 1000x2000mm, 2mm thick',
     supplier: 'Alu Service',
     supplierRef: 'AS-2024-PL2',
     supplierLink: '',
@@ -39,10 +39,10 @@ export const initialStockItems: StockItem[] = [
   },
   {
     id: 'stk-003',
-    name: 'Roulement 6205',
+    name: 'Bearing 6205',
     sku: 'RLT-6205',
-    category: 'Composants',
-    description: 'Roulement à billes 6205-2RS étanche',
+    category: 'Components',
+    description: 'Sealed ball bearing 6205-2RS',
     supplier: 'SKF Distribution',
     supplierRef: 'SKF-6205-2RS',
     supplierLink: '',
@@ -57,10 +57,10 @@ export const initialStockItems: StockItem[] = [
   },
   {
     id: 'stk-004',
-    name: 'Moteur DC 24V',
+    name: 'DC motor 24V',
     sku: 'MOT-DC24',
-    category: 'Composants',
-    description: 'Moteur à courant continu 24V 500W',
+    category: 'Components',
+    description: '24V 500W DC motor',
     supplier: 'Maxon Motor',
     supplierRef: 'MAX-DC24-500',
     supplierLink: '',
@@ -77,8 +77,8 @@ export const initialStockItems: StockItem[] = [
     id: 'stk-005',
     name: 'Cable 2.5mm²',
     sku: 'CAB-25',
-    category: 'Électrique',
-    description: 'Câble souple H07V-K 2.5mm² noir',
+    category: 'Electrical',
+    description: 'Flexible cable H07V-K 2.5mm² black',
     supplier: 'Nexans',
     supplierRef: 'NX-H07VK-25N',
     supplierLink: '',
@@ -90,34 +90,5 @@ export const initialStockItems: StockItem[] = [
     price: 1.2,
     createdAt: '2024-02-15',
     updatedAt: '2024-02-15',
-  },
-];
-
-export const initialAssemblyLists: AssemblyList[] = [
-  {
-    id: 'asm-001',
-    name: 'Assemblage Module A',
-    productName: 'Module de commande A',
-    description: 'Assemblage du module de commande principal',
-    items: [
-      { stockItemId: 'stk-001', quantity: 12 },
-      { stockItemId: 'stk-002', quantity: 0.5 },
-      { stockItemId: 'stk-003', quantity: 2 },
-      { stockItemId: 'stk-004', quantity: 1 },
-    ],
-    createdAt: '2024-03-01',
-  },
-];
-
-export const initialProducts: Product[] = [
-  {
-    id: 'prd-001',
-    name: 'Module de commande A',
-    sku: 'MOD-CMD-A',
-    description: 'Module de commande principal assemblé',
-    assemblyListId: 'asm-001',
-    quantityProduced: 15,
-    minQuantity: 5,
-    createdAt: '2024-03-15',
   },
 ];

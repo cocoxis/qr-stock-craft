@@ -56,8 +56,8 @@ const ShoppingListPage = () => {
   const handleCreateList = () => {
     if (!newListName.trim()) return;
     createList.mutate(newListName.trim(), {
-      onSuccess: () => { setNewListName(''); toast({ title: 'Liste créée' }); },
-      onError: (e) => toast({ title: 'Erreur', description: e.message, variant: 'destructive' }),
+      onSuccess: () => { setNewListName(''); toast({ title: 'List created' }); },
+      onError: (e) => toast({ title: 'Error', description: e.message, variant: 'destructive' }),
     });
   };
 
@@ -72,8 +72,8 @@ const ShoppingListPage = () => {
       supplier: item.supplier,
       supplier_link: item.supplierLink,
     }, {
-      onSuccess: () => toast({ title: `${item.name} ajouté` }),
-      onError: (e) => toast({ title: 'Erreur', description: e.message, variant: 'destructive' }),
+      onSuccess: () => toast({ title: `${item.name} added` }),
+      onError: (e) => toast({ title: 'Error', description: e.message, variant: 'destructive' }),
     });
   };
 
@@ -88,8 +88,8 @@ const ShoppingListPage = () => {
       supplier: null,
       supplier_link: null,
     }, {
-      onSuccess: () => { setAddManualName(''); setAddManualQty('1'); toast({ title: 'Article ajouté' }); },
-      onError: (e) => toast({ title: 'Erreur', description: e.message, variant: 'destructive' }),
+      onSuccess: () => { setAddManualName(''); setAddManualQty('1'); toast({ title: 'Item added' }); },
+      onError: (e) => toast({ title: 'Error', description: e.message, variant: 'destructive' }),
     });
   };
 
@@ -108,8 +108,8 @@ const ShoppingListPage = () => {
             <div className="min-w-0">
               <p className="font-medium text-sm truncate">{list.name}</p>
               <p className="text-xs text-muted-foreground">
-                {new Date(list.created_at).toLocaleDateString('fr-FR')}
-                {list.archived_at && ` · Archivée le ${new Date(list.archived_at).toLocaleDateString('fr-FR')}`}
+                {new Date(list.created_at).toLocaleDateString('en-US')}
+                {list.archived_at && ` · Archived ${new Date(list.archived_at).toLocaleDateString('en-US')}`}
               </p>
             </div>
           </div>
@@ -138,22 +138,22 @@ const ShoppingListPage = () => {
       <div className="animate-fade-in space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">Listes de courses</h1>
-            <p className="text-muted-foreground text-sm mt-1">Gérez vos commandes de réapprovisionnement</p>
+            <h1 className="text-2xl font-bold tracking-tight">Shopping lists</h1>
+            <p className="text-muted-foreground text-sm mt-1">Manage your restock orders</p>
           </div>
         </div>
 
         {/* Create new list */}
         <div className="flex gap-2">
           <Input
-            placeholder="Nom de la nouvelle liste..."
+            placeholder="New list name..."
             value={newListName}
             onChange={(e) => setNewListName(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleCreateList()}
             className="max-w-xs"
           />
           <Button onClick={handleCreateList} disabled={!newListName.trim()}>
-            <Plus className="w-4 h-4 mr-2" /> Créer
+            <Plus className="w-4 h-4 mr-2" /> Create
           </Button>
         </div>
 
@@ -163,11 +163,11 @@ const ShoppingListPage = () => {
             <Tabs defaultValue="active">
               <TabsList>
                 <TabsTrigger value="active">
-                  Actives
+                  Active
                   {activeLists.length > 0 && <Badge variant="secondary" className="ml-2 text-xs">{activeLists.length}</Badge>}
                 </TabsTrigger>
                 <TabsTrigger value="archived">
-                  Archivées
+                  Archived
                   {archivedLists.length > 0 && <Badge variant="secondary" className="ml-2 text-xs">{archivedLists.length}</Badge>}
                 </TabsTrigger>
               </TabsList>
@@ -177,14 +177,14 @@ const ShoppingListPage = () => {
                     <div className="animate-spin w-6 h-6 border-2 border-primary border-t-transparent rounded-full" />
                   </div>
                 ) : activeLists.length === 0 ? (
-                  <p className="text-sm text-muted-foreground text-center py-8">Aucune liste active</p>
+                  <p className="text-sm text-muted-foreground text-center py-8">No active lists</p>
                 ) : (
                   activeLists.map(l => renderListCard(l))
                 )}
               </TabsContent>
               <TabsContent value="archived" className="space-y-2 mt-3">
                 {archivedLists.length === 0 ? (
-                  <p className="text-sm text-muted-foreground text-center py-8">Aucune liste archivée</p>
+                  <p className="text-sm text-muted-foreground text-center py-8">No archived lists</p>
                 ) : (
                   archivedLists.map(l => renderListCard(l, true))
                 )}
@@ -202,7 +202,7 @@ const ShoppingListPage = () => {
                     {selectedList.status === 'active' && (
                       <div className="flex gap-1 shrink-0">
                         <Button size="sm" variant="outline" onClick={() => setShowAddFromStock(true)}>
-                          <Package className="w-4 h-4 mr-1" /> Depuis le stock
+                          <Package className="w-4 h-4 mr-1" /> From stock
                         </Button>
                       </div>
                     )}
@@ -213,7 +213,7 @@ const ShoppingListPage = () => {
                   {selectedList.status === 'active' && (
                     <div className="flex gap-2">
                       <Input
-                        placeholder="Ajouter un article..."
+                        placeholder="Add an item..."
                         value={addManualName}
                         onChange={(e) => setAddManualName(e.target.value)}
                         onKeyDown={(e) => e.key === 'Enter' && handleAddManual()}
@@ -234,7 +234,7 @@ const ShoppingListPage = () => {
 
                   {/* Items */}
                   {(!selectedList.items || selectedList.items.length === 0) ? (
-                    <p className="text-sm text-muted-foreground text-center py-6">Aucun article dans cette liste</p>
+                    <p className="text-sm text-muted-foreground text-center py-6">No items in this list</p>
                   ) : (
                     <div className="space-y-1">
                       {selectedList.items.map(item => (
@@ -276,7 +276,7 @@ const ShoppingListPage = () => {
               </Card>
             ) : (
               <div className="flex items-center justify-center h-48 text-sm text-muted-foreground">
-                Sélectionnez une liste pour voir son contenu
+                Select a list to see its content
               </div>
             )}
           </div>
@@ -287,16 +287,16 @@ const ShoppingListPage = () => {
       <Dialog open={showAddFromStock} onOpenChange={setShowAddFromStock}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Ajouter depuis le stock</DialogTitle>
+            <DialogTitle>Add from stock</DialogTitle>
           </DialogHeader>
           <Input
-            placeholder="Rechercher un article..."
+            placeholder="Search for an item..."
             value={stockSearch}
             onChange={(e) => setStockSearch(e.target.value)}
           />
           <div className="max-h-60 overflow-y-auto space-y-1">
             {filteredStock.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-4">Aucun article trouvé</p>
+              <p className="text-sm text-muted-foreground text-center py-4">No items found</p>
             ) : (
               filteredStock.map(item => (
                 <button
@@ -313,7 +313,7 @@ const ShoppingListPage = () => {
                   )}
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-medium truncate">{item.name}</p>
-                    <p className="text-xs text-muted-foreground">{item.sku} · {item.quantity} {item.unit} en stock</p>
+                    <p className="text-xs text-muted-foreground">{item.sku} · {item.quantity} {item.unit} in stock</p>
                   </div>
                   <Plus className="w-4 h-4 text-primary shrink-0" />
                 </button>
@@ -327,18 +327,18 @@ const ShoppingListPage = () => {
       <AlertDialog open={!!confirmArchive} onOpenChange={() => setConfirmArchive(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Archiver cette liste ?</AlertDialogTitle>
-            <AlertDialogDescription>La liste sera marquée comme commandée et archivée. Vous pourrez toujours la consulter.</AlertDialogDescription>
+            <AlertDialogTitle>Archive this list?</AlertDialogTitle>
+            <AlertDialogDescription>The list will be marked as ordered and archived. You can still view it.</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={() => {
               if (confirmArchive) {
                 archiveList.mutate(confirmArchive, {
-                  onSuccess: () => { toast({ title: 'Liste archivée' }); setConfirmArchive(null); if (selectedListId === confirmArchive) setSelectedListId(null); },
+                  onSuccess: () => { toast({ title: 'List archived' }); setConfirmArchive(null); if (selectedListId === confirmArchive) setSelectedListId(null); },
                 });
               }
-            }}>Archiver</AlertDialogAction>
+            }}>Archive</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
@@ -347,18 +347,18 @@ const ShoppingListPage = () => {
       <AlertDialog open={!!confirmDelete} onOpenChange={() => setConfirmDelete(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Supprimer cette liste ?</AlertDialogTitle>
-            <AlertDialogDescription>Cette action est irréversible.</AlertDialogDescription>
+            <AlertDialogTitle>Delete this list?</AlertDialogTitle>
+            <AlertDialogDescription>This action cannot be undone.</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90" onClick={() => {
               if (confirmDelete) {
                 deleteList.mutate(confirmDelete, {
-                  onSuccess: () => { toast({ title: 'Liste supprimée' }); setConfirmDelete(null); if (selectedListId === confirmDelete) setSelectedListId(null); },
+                  onSuccess: () => { toast({ title: 'List deleted' }); setConfirmDelete(null); if (selectedListId === confirmDelete) setSelectedListId(null); },
                 });
               }
-            }}>Supprimer</AlertDialogAction>
+            }}>Delete</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

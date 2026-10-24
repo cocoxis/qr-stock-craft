@@ -44,19 +44,15 @@ export function useShoppingListWithItems(id: string | undefined) {
     queryKey: [...KEY, id],
     enabled: !!id,
     queryFn: async () => {
-      const { data: list, error } = await supabase
+      // List + items in a single request
+      const { data, error } = await supabase
         .from('shopping_lists')
-        .select('*')
+        .select('*, items:shopping_list_items(*)')
         .eq('id', id!)
+        .order('created_at', { referencedTable: 'shopping_list_items', ascending: true })
         .single();
       if (error) throw error;
-      const { data: items, error: itemsError } = await supabase
-        .from('shopping_list_items')
-        .select('*')
-        .eq('shopping_list_id', id!)
-        .order('created_at', { ascending: true });
-      if (itemsError) throw itemsError;
-      return { ...list, items: items ?? [] } as unknown as ShoppingList;
+      return data as unknown as ShoppingList;
     },
   });
 }

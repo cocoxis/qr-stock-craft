@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { Package, Box, ClipboardList, LayoutDashboard, QrCode, Database, Plus, Trash2, ChevronDown, ShoppingCart, Settings } from 'lucide-react';
+import { Package, Tag, LayoutDashboard, QrCode, Database, Plus, Trash2, ChevronDown, ShoppingCart, Settings } from 'lucide-react';
 import ThemeToggle from '@/components/ThemeToggle';
 import { useWorkspaceContext } from '@/contexts/WorkspaceContext';
 import { Button } from '@/components/ui/button';
@@ -18,11 +18,10 @@ import {
 import { useSettings } from '@/hooks/useSettings';
 
 const navItems = [
-  { to: '/', icon: LayoutDashboard, label: 'Tableau de bord' },
+  { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
   { to: '/stock', icon: Package, label: 'Stock' },
-  { to: '/products', icon: Box, label: 'Produits' },
-  { to: '/assembly', icon: ClipboardList, label: 'Assemblages' },
-  { to: '/shopping', icon: ShoppingCart, label: 'Courses' },
+  { to: '/labels', icon: Tag, label: 'Labels' },
+  { to: '/shopping', icon: ShoppingCart, label: 'Shopping' },
 ];
 
 const AppSidebar = () => {
@@ -48,7 +47,7 @@ const AppSidebar = () => {
           </div>
           <div>
             <h1 className="text-sm font-bold text-sidebar-foreground tracking-tight">StockQR</h1>
-            <p className="text-xs text-sidebar-foreground/50">Gestion de stock</p>
+            <p className="text-xs text-sidebar-foreground/50">Inventory management</p>
           </div>
         </div>
       </div>
@@ -83,7 +82,7 @@ const AppSidebar = () => {
             ))}
             <div className="flex gap-1 pt-1 border-t border-border mt-1">
               <Input
-                placeholder="Nouvelle base..."
+                placeholder="New database..."
                 value={newWsName}
                 onChange={(e) => setNewWsName(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
@@ -124,7 +123,7 @@ const AppSidebar = () => {
           <NavLink
             to="/settings"
             className="h-8 w-8 flex items-center justify-center rounded-md text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors"
-            title="Réglages"
+            title="Settings"
           >
             <Settings className="w-4 h-4" />
           </NavLink>
@@ -137,18 +136,18 @@ const AppSidebar = () => {
       <AlertDialog open={!!deleteWs} onOpenChange={() => setDeleteWs(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Supprimer cette base ?</AlertDialogTitle>
+            <AlertDialogTitle>Delete this database?</AlertDialogTitle>
             <AlertDialogDescription>
-              Toutes les données de cette base seront supprimées définitivement.
+              All data in this database will be permanently deleted.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => { if (deleteWs) { deleteWorkspace(deleteWs); setDeleteWs(null); setShowWsList(false); } }}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              Supprimer
+              Delete
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

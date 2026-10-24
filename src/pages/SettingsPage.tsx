@@ -1,15 +1,14 @@
-import { Package, Box, ClipboardList, LayoutDashboard, ShoppingCart, Settings } from 'lucide-react';
+import { Package, Tag, LayoutDashboard, ShoppingCart, Settings } from 'lucide-react';
 import AppLayout from '@/components/AppLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { useSettings } from '@/hooks/useSettings';
 
 const allTabs = [
-  { path: '/', label: 'Tableau de bord', icon: LayoutDashboard, canHide: false },
+  { path: '/', label: 'Dashboard', icon: LayoutDashboard, canHide: false },
   { path: '/stock', label: 'Stock', icon: Package, canHide: true },
-  { path: '/products', label: 'Produits', icon: Box, canHide: true },
-  { path: '/assembly', label: 'Assemblages', icon: ClipboardList, canHide: true },
-  { path: '/shopping', label: 'Courses', icon: ShoppingCart, canHide: true },
+  { path: '/labels', label: 'Labels', icon: Tag, canHide: true },
+  { path: '/shopping', label: 'Shopping', icon: ShoppingCart, canHide: true },
 ];
 
 const SettingsPage = () => {
@@ -19,20 +18,20 @@ const SettingsPage = () => {
     <AppLayout>
       <div className="animate-fade-in max-w-2xl mx-auto space-y-6">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Réglages</h1>
-          <p className="text-muted-foreground text-sm mt-1">Personnalisez l'interface de l'application</p>
+          <h1 className="text-2xl font-bold tracking-tight">Settings</h1>
+          <p className="text-muted-foreground text-sm mt-1">Customize the app interface</p>
         </div>
 
         <Card>
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
               <Settings className="w-4 h-4" />
-              Onglets du menu
+              Menu tabs
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <p className="text-sm text-muted-foreground mb-4">
-              Choisissez les onglets à afficher dans le menu de navigation.
+              Choose which tabs appear in the navigation menu.
             </p>
             {allTabs.map(({ path, label, icon: Icon, canHide }) => {
               const isVisible = !settings.hiddenTabs.includes(path);

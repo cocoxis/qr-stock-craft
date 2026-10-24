@@ -11,7 +11,7 @@ const ACTIVE_WORKSPACE_KEY = 'stockqr_active_workspace';
 
 const defaultWorkspace: Workspace = {
   id: 'default',
-  name: 'Base principale',
+  name: 'Main database',
   createdAt: new Date().toISOString(),
 };
 

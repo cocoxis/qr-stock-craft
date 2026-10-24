@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
-import { Html5Qrcode } from 'html5-qrcode';
+import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 import { useNavigate } from 'react-router-dom';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Camera, XCircle } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { parseStockCode } from '@/lib/qr';
 
 interface QRScannerProps {
   open: boolean;
@@ -21,30 +22,30 @@ const QRScanner = ({ open, onOpenChange }: QRScannerProps) => {
 
     const startScanner = async () => {
       try {
-        const scanner = new Html5Qrcode('qr-reader');
+        const scanner = new Html5Qrcode('qr-reader', {
+          // Labels use Data Matrix (smaller); older labels and the app screens use QR
+          formatsToSupport: [Html5QrcodeSupportedFormats.DATA_MATRIX, Html5QrcodeSupportedFormats.QR_CODE],
+          verbose: false,
+          // Native reader (Android Chrome) is much better at small Data Matrix codes than the JS fallback
+          experimentalFeatures: { useBarCodeDetectorIfSupported: true },
+        });
         scannerRef.current = scanner;
         await scanner.start(
           { facingMode: 'environment' },
           { fps: 10, qrbox: { width: 250, height: 250 } },
           (decodedText) => {
-            try {
-              const data = JSON.parse(decodedText);
+            const id = parseStockCode(decodedText);
+            if (id) {
               scanner.stop().catch(() => {});
               onOpenChange(false);
-              if (data.type === 'stock') {
-                navigate(`/stock/${data.id}`);
-              } else if (data.type === 'product') {
-                navigate(`/products?highlight=${data.id}`);
-              }
-              toast({ title: 'QR scanné', description: `${data.name} (${data.sku})` });
-            } catch {
-              toast({ title: 'QR scanné', description: decodedText });
+              navigate(`/stock/${id}`);
             }
+            toast({ title: 'Code scanned', description: id ?? decodedText });
           },
           () => {}
         );
       } catch (err) {
-        setError("Impossible d'accéder à la caméra. Vérifiez les permissions.");
+        setError("Cannot access the camera. Check permissions.");
       }
     };
 
@@ -64,14 +65,14 @@ const QRScanner = ({ open, onOpenChange }: QRScannerProps) => {
       <DialogContent className="max-w-sm">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Camera className="w-4 h-4" /> Scanner un QR code
+            <Camera className="w-4 h-4" /> Scan a code
           </DialogTitle>
         </DialogHeader>
         {error ? (
           <div className="flex flex-col items-center gap-3 py-6">
             <XCircle className="w-10 h-10 text-destructive" />
             <p className="text-sm text-muted-foreground text-center">{error}</p>
-            <Button variant="outline" onClick={() => { setError(''); onOpenChange(false); }}>Fermer</Button>
+            <Button variant="outline" onClick={() => { setError(''); onOpenChange(false); }}>Close</Button>
           </div>
         ) : (
           <div id="qr-reader" className="w-full rounded-lg overflow-hidden" />

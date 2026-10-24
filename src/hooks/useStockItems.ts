@@ -29,6 +29,8 @@ function rowToItem(row: any): StockItem {
     screwLength: row.screw_length,
     screwShape: row.screw_shape,
     link: row.link,
+    lcscPart: row.lcsc_part ?? '',
+    specs: Array.isArray(row.specs) ? row.specs : [],
   };
 }
 
@@ -55,6 +57,8 @@ function itemToRow(item: StockItem): Record<string, unknown> {
     screw_length: item.screwLength,
     screw_shape: item.screwShape,
     link: item.link,
+    lcsc_part: item.lcscPart ?? '',
+    specs: item.specs ?? [],
     created_at: item.createdAt,
     updated_at: item.updatedAt,
   };
@@ -98,6 +102,20 @@ export function useDeleteStockItem() {
   return useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase.from('stock_items').delete().eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
+  });
+}
+
+export function useBulkUpsertStockItems() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (items: StockItem[]) => {
+      if (items.length === 0) return;
+      const { error } = await supabase
+        .from('stock_items')
+        .upsert(items.map(itemToRow) as any);
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),

@@ -22,3 +22,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Personal files: LCSC order exports, photos, one-off data scripts
+LCSC__*.csv
+IMG.*
+supabase/lcsc_commande_*.sql

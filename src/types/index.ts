@@ -1,3 +1,5 @@
+import type { Spec } from '@/lib/lcsc';
+
 export interface StockItem {
   id: string;
   name: string;
@@ -24,30 +26,7 @@ export interface StockItem {
   screwLength?: string;
   screwShape?: string;
   link?: string;
-}
-
-export interface Product {
-  id: string;
-  name: string;
-  sku: string;
-  description: string;
-  imageUrl?: string;
-  assemblyListId: string;
-  quantityProduced: number;
-  minQuantity: number;
-  createdAt: string;
-}
-
-export interface AssemblyItem {
-  stockItemId: string;
-  quantity: number;
-}
-
-export interface AssemblyList {
-  id: string;
-  name: string;
-  productName: string;
-  description: string;
-  items: AssemblyItem[];
-  createdAt: string;
+  // N° fournisseur
+  lcscPart?: string;
+  specs?: Spec[];
 }

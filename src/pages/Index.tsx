@@ -1,11 +1,9 @@
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Package, Box, AlertTriangle, TrendingUp, Euro, MapPin, ExternalLink, ShoppingCart, CheckCircle2 } from 'lucide-react';
+import { Package, AlertTriangle, TrendingUp, Euro, MapPin, ExternalLink, ShoppingCart, CheckCircle2 } from 'lucide-react';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import AppLayout from '@/components/AppLayout';
 import { useStockItems } from '@/hooks/useStockItems';
-import { useProducts } from '@/hooks/useProducts';
-import { useAssemblyLists } from '@/hooks/useAssemblyLists';
 import { useShoppingLists } from '@/hooks/useShoppingLists';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -26,22 +24,18 @@ const CHART_COLORS = [
 const Index = () => {
   const navigate = useNavigate();
   const { data: stockItems = [], isLoading: loadingStock } = useStockItems();
-  const { data: products = [], isLoading: loadingProducts } = useProducts();
-  const { data: assemblyLists = [] } = useAssemblyLists();
   const { data: activeShoppingLists = [] } = useShoppingLists('active');
 
-  const isLoading = loadingStock || loadingProducts;
+  const isLoading = loadingStock;
 
   const lowStockItems = stockItems.filter(item => item.quantity <= item.minQuantity);
-  const lowStockProducts = products.filter(p => p.quantityProduced <= p.minQuantity);
   const totalStockValue = stockItems.reduce((sum, item) => sum + item.quantity * item.price, 0);
   const totalUnits = stockItems.reduce((s, i) => s + i.quantity, 0);
-  const totalProduced = products.reduce((s, p) => s + p.quantityProduced, 0);
 
   const categoryData = useMemo(() => {
     const map = new Map<string, { count: number; value: number }>();
     stockItems.forEach(item => {
-      const cat = item.category || 'Non classé';
+      const cat = item.category || 'Uncategorized';
       const existing = map.get(cat) || { count: 0, value: 0 };
       map.set(cat, { count: existing.count + item.quantity, value: existing.value + item.quantity * item.price });
     });
@@ -57,35 +51,27 @@ const Index = () => {
 
   const stats = [
     {
-      label: 'Articles en stock',
+      label: 'Items in stock',
       value: stockItems.length,
       icon: Package,
-      detail: `${totalUnits} unités totales`,
+      detail: `${totalUnits} total units`,
       color: 'text-primary',
       bg: 'bg-primary/10',
     },
     {
-      label: 'Produits fabriqués',
-      value: products.length,
-      icon: Box,
-      detail: `${totalProduced} unités produites`,
-      color: 'text-accent',
-      bg: 'bg-accent/10',
-    },
-    {
-      label: 'Alertes stock',
-      value: lowStockItems.length + lowStockProducts.length,
+      label: 'Stock alerts',
+      value: lowStockItems.length,
       icon: AlertTriangle,
-      detail: lowStockItems.length + lowStockProducts.length > 0 ? 'Réapprovisionnement requis' : 'Tout est OK',
-      color: lowStockItems.length + lowStockProducts.length > 0 ? 'text-warning' : 'text-success',
-      bg: lowStockItems.length + lowStockProducts.length > 0 ? 'bg-warning/10' : 'bg-success/10',
-      alert: lowStockItems.length + lowStockProducts.length > 0,
+      detail: lowStockItems.length > 0 ? 'Restock needed' : 'All good',
+      color: lowStockItems.length > 0 ? 'text-warning' : 'text-success',
+      bg: lowStockItems.length > 0 ? 'bg-warning/10' : 'bg-success/10',
+      alert: lowStockItems.length > 0,
     },
     {
-      label: 'Valeur totale',
-      value: totalStockValue.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }),
+      label: 'Total value',
+      value: totalStockValue.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }),
       icon: Euro,
-      detail: `${categoryData.length} catégories`,
+      detail: `${categoryData.length} categories`,
       color: 'text-success',
       bg: 'bg-success/10',
       isText: true,
@@ -106,11 +92,11 @@ const Index = () => {
     <AppLayout>
       <div className="animate-fade-in space-y-6">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Tableau de bord</h1>
-          <p className="text-muted-foreground text-sm mt-1">Vue d'ensemble de votre inventaire</p>
+          <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
+          <p className="text-muted-foreground text-sm mt-1">Overview of your inventory</p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {stats.map((stat) => (
             <Card key={stat.label} className="relative overflow-hidden">
               <CardContent className="p-5">
@@ -136,11 +122,11 @@ const Index = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-semibold">Répartition par catégorie</CardTitle>
+              <CardTitle className="text-sm font-semibold">Breakdown by category</CardTitle>
             </CardHeader>
             <CardContent>
               {categoryData.length === 0 ? (
-                <p className="text-sm text-muted-foreground py-8 text-center">Aucune donnée</p>
+                <p className="text-sm text-muted-foreground py-8 text-center">No data</p>
               ) : (
                 <div className="flex items-center gap-4">
                   <ResponsiveContainer width="50%" height={180}>
@@ -150,7 +136,7 @@ const Index = () => {
                           <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
                         ))}
                       </Pie>
-                      <Tooltip formatter={(v: number) => `${v} unités`} contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '12px' }} />
+                      <Tooltip formatter={(v: number) => `${v} units`} contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '12px' }} itemStyle={{ color: 'hsl(var(--foreground))' }} labelStyle={{ color: 'hsl(var(--foreground))' }} />
                     </PieChart>
                   </ResponsiveContainer>
                   <div className="flex-1 space-y-1.5">
@@ -171,19 +157,19 @@ const Index = () => {
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-semibold flex items-center gap-2">
                 <TrendingUp className="w-4 h-4 text-primary" />
-                Top articles par valeur
+                Top items by value
               </CardTitle>
             </CardHeader>
             <CardContent>
               {topValueItems.length === 0 ? (
-                <p className="text-sm text-muted-foreground py-8 text-center">Aucune donnée</p>
+                <p className="text-sm text-muted-foreground py-8 text-center">No data</p>
               ) : (
                 <ResponsiveContainer width="100%" height={180}>
                   <BarChart data={topValueItems} layout="vertical" margin={{ left: 0, right: 12, top: 4, bottom: 4 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" horizontal={false} />
-                    <XAxis type="number" tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }} tickFormatter={(v) => `${v}€`} />
+                    <XAxis type="number" tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }} tickFormatter={(v) => `$${v}`} />
                     <YAxis type="category" dataKey="name" width={100} tick={{ fontSize: 11, fill: 'hsl(var(--foreground))' }} />
-                    <Tooltip formatter={(v: number) => `${v.toFixed(2)}€`} contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '12px' }} />
+                    <Tooltip formatter={(v: number) => `$${v.toFixed(2)}`} contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '12px' }} itemStyle={{ color: 'hsl(var(--foreground))' }} labelStyle={{ color: 'hsl(var(--foreground))' }} cursor={{ fill: 'hsl(var(--muted))', opacity: 0.4 }} />
                     <Bar dataKey="value" fill="hsl(35, 92%, 50%)" radius={[0, 4, 4, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
@@ -192,21 +178,21 @@ const Index = () => {
           </Card>
         </div>
 
-        <Card className={lowStockItems.length + lowStockProducts.length > 0 ? 'border-warning/40' : ''}>
+        <Card className={lowStockItems.length > 0 ? 'border-warning/40' : ''}>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-semibold flex items-center gap-2">
-              <AlertTriangle className={`w-4 h-4 ${lowStockItems.length + lowStockProducts.length > 0 ? 'text-warning' : 'text-success'}`} />
-              Stock critique
-              {(lowStockItems.length + lowStockProducts.length) > 0 && (
+              <AlertTriangle className={`w-4 h-4 ${lowStockItems.length > 0 ? 'text-warning' : 'text-success'}`} />
+              Low stock
+              {lowStockItems.length > 0 && (
                 <Badge variant="secondary" className="bg-warning/15 text-warning border-warning/30 text-xs ml-1">
-                  {lowStockItems.length + lowStockProducts.length} alerte{lowStockItems.length + lowStockProducts.length > 1 ? 's' : ''}
+                  {lowStockItems.length} alert{lowStockItems.length > 1 ? 's' : ''}
                 </Badge>
               )}
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {lowStockItems.length + lowStockProducts.length === 0 ? (
-              <p className="text-sm text-muted-foreground py-4 text-center">✅ Tous les niveaux de stock sont suffisants</p>
+            {lowStockItems.length === 0 ? (
+              <p className="text-sm text-muted-foreground py-4 text-center">✅ All stock levels are sufficient</p>
             ) : (
               <div className="space-y-1">
                 {lowStockItems.map(item => {
@@ -243,29 +229,6 @@ const Index = () => {
                     </div>
                   );
                 })}
-                {lowStockProducts.map(product => (
-                  <div
-                    key={product.id}
-                    onClick={() => navigate(`/products`)}
-                    className="flex items-center gap-4 p-3 rounded-lg hover:bg-muted/60 cursor-pointer transition-colors group"
-                  >
-                    <div className="w-9 h-9 rounded bg-accent/10 flex items-center justify-center shrink-0">
-                      <Box className="w-4 h-4 text-accent" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <p className="text-sm font-medium truncate group-hover:text-primary transition-colors">{product.name}</p>
-                        <Badge variant="outline" className="text-[10px] font-mono shrink-0">{product.sku}</Badge>
-                        <Badge variant="secondary" className="text-[10px] shrink-0">Produit</Badge>
-                      </div>
-                      <div className="flex items-center gap-3 mt-1">
-                        <Progress value={product.minQuantity > 0 ? Math.min((product.quantityProduced / product.minQuantity) * 100, 100) : 0} className="h-1.5 flex-1 max-w-[120px]" />
-                        <span className="text-xs font-mono text-warning font-semibold">{product.quantityProduced}/{product.minQuantity}</span>
-                      </div>
-                    </div>
-                    <ExternalLink className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
-                  </div>
-                ))}
               </div>
             )}
           </CardContent>
@@ -276,19 +239,19 @@ const Index = () => {
             <CardTitle className="text-sm font-semibold flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <ShoppingCart className="w-4 h-4 text-primary" />
-                Listes de courses en cours
+                Active shopping lists
                 {activeShoppingLists.length > 0 && (
                   <Badge variant="secondary" className="text-xs">{activeShoppingLists.length}</Badge>
                 )}
               </div>
               <Button size="sm" variant="outline" onClick={() => navigate('/shopping')}>
-                Voir tout
+                View all
               </Button>
             </CardTitle>
           </CardHeader>
           <CardContent>
             {activeShoppingLists.length === 0 ? (
-              <p className="text-sm text-muted-foreground py-4 text-center">Aucune liste de courses en cours</p>
+              <p className="text-sm text-muted-foreground py-4 text-center">No active shopping lists</p>
             ) : (
               <div className="space-y-2">
                 {activeShoppingLists.slice(0, 5).map(list => (
@@ -303,7 +266,7 @@ const Index = () => {
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate group-hover:text-primary transition-colors">{list.name}</p>
                       <p className="text-xs text-muted-foreground">
-                        Créée le {new Date(list.created_at).toLocaleDateString('fr-FR')}
+                        Created {new Date(list.created_at).toLocaleDateString('en-US')}
                       </p>
                     </div>
                     <ExternalLink className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />

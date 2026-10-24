@@ -1,1 +1,3 @@
-project_id = "kyowopvjkyjurukndemc"
+project_id = "ligeadqbabtvmsjeutlb"
+[functions.lcsc]
+verify_jwt = false
