@@ -56,7 +56,15 @@ fi
 echo "Pulling images…"
 docker pull -q "$IMAGE_DB" > /dev/null
 docker pull -q "$IMAGE_REST" > /dev/null
-docker pull -q "$IMAGE_APP" > /dev/null
+# A private package cannot be pulled: an image built on the NAS is used instead
+if ! docker pull -q "$IMAGE_APP" > /dev/null 2>&1; then
+  if docker image inspect "$IMAGE_APP" > /dev/null 2>&1; then
+    echo "Could not download $IMAGE_APP, using the local copy."
+  else
+    echo "Cannot download $IMAGE_APP. Make the package public on GitHub, or build it on the NAS."
+    exit 1
+  fi
+fi
 
 docker network inspect "$NETWORK" > /dev/null 2>&1 || docker network create "$NETWORK" > /dev/null
 docker rm -f stockqr-app stockqr-rest stockqr-db > /dev/null 2>&1 || true
